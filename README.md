@@ -1,7 +1,9 @@
-# BunKai 📚
+# BunKai Reader📚
 
 > A production-grade, high-performance Web EPUB Reader built for the modern web.  
 > **Currently supports EPUB files only.**
+
+🌐 **Live Demo:** [https://bunkai-reader.vercel.app/](https://bunkai-reader.vercel.app/)
 
 *"A reader lives a thousand lives before he dies. The man who never reads lives only one."* — George R.R. Martin
 
@@ -11,7 +13,7 @@ BunKai is designed for those who believe in the power of reading—a lifelong jo
 
 **BunKai** (分解 - "Analysis/Deconstruction") is an experiment in minimalism and performance. It strips away the clutter of traditional e-readers to focus entirely on the reading experience, specifically optimized for OLED displays.
 
-Reading is a lifelong journey—a gateway to infinite worlds, knowledge, and perspectives. BunKai is crafted to honor this journey by providing a clean, distraction-free environment where you can immerse yourself in the written word. Every design decision prioritizes your reading experience, from the pitch-black OLED mode that saves battery to the smooth, cinematic scrolling that makes long reading sessions effortless.
+Reading is a lifelong journey—a gateway to infinite worlds, knowledge, and perspectives. BunKai is crafted to honor this journey by providing a clean, distraction-free environment where you can immerse yourself in the written word. Every design decision prioritizes your reading experience, from the pitch-black Black mode that saves battery to the smooth, cinematic scrolling that makes long reading sessions effortless.
 
 ## 🛠️ Tech Stack
 
@@ -25,7 +27,7 @@ Reading is a lifelong journey—a gateway to infinite worlds, knowledge, and per
 
 ## ✨ Key Features
 
-* **OLED-Pitch Mode:** True `#000000` background for battery saving and contrast
+* **Black-Pitch Mode:** True `#000000` background for battery saving and contrast
 * **Instant Resume:** Auto-saves reading position (CFI) and sidebar state
 * **Offline First:** Books are stored locally in the browser via IndexedDB
 * **Glassmorphism UI:** Adaptive, non-intrusive interface that fades away when reading
@@ -94,7 +96,7 @@ BunKai
 
 ## 🎨 Themes
 
-* **OLED:** Pitch black (`#000000`) for maximum battery efficiency on OLED displays
+* **Black:** Pitch black (`#000000`) for maximum battery efficiency on OLED displays
 * **Dark:** Soft dark (`#111111`) for comfortable night reading
 * **Light:** Paper-like (`#fdfbf7`) for daytime reading
 
@@ -116,9 +118,6 @@ Contributions are welcome! Whether you're fixing bugs, adding features, improvin
 
 Please feel free to reach out or submit a pull request. Together, we can build a better reading experience for everyone.
 
-## 📝 License
-
-MIT
 
 ## 👤 Author
 
@@ -130,5 +129,5 @@ MIT
 
 ---
 
-Built with ❤️ for readers who value simplicity, performance, and the timeless joy of reading.  
+Built with ❤️ for readers who value simplicity, performance, and the timeless joy of reading. 
 *"The more that you read, the more things you will know. The more that you learn, the more places you'll go."* — Dr. Seuss
