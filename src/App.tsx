@@ -1,5 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import { AnimatePresence } from 'framer-motion'
 import { ThemeProvider } from './context/ThemeContext'
+import { ToastProvider } from './context/ToastContext'
 import { usePersistence } from './hooks/usePersistence'
 import { AppShell } from './components/Layout/AppShell'
 import { Landing } from './components/Views/Landing'
@@ -21,7 +23,13 @@ function AppContent() {
   const [currentChapterHref, setCurrentChapterHref] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const { loadBookFromDevice, getLastChapter } = usePersistence()
-  const { setToc: setSidebarToc } = useSidebar()
+  const { setToc: setSidebarToc, registerNavigation } = useSidebar()
+  const currentViewRef = useRef(currentView)
+  
+  // Keep ref in sync with state
+  useEffect(() => {
+    currentViewRef.current = currentView
+  }, [currentView])
 
   // Sync TOC to SidebarContext whenever it changes
   useEffect(() => {
@@ -81,6 +89,35 @@ function AppContent() {
     setCurrentChapterHref(href)
   }
 
+  // Register navigation function for sidebar - works for both TOC and Reader views
+  useEffect(() => {
+    const navigateFromSidebar = (href: string) => {
+      // Use ref to get the latest currentView value
+      const view = currentViewRef.current
+      if (view === 'toc') {
+        // If on TOC screen, switch to reader with selected chapter
+        handleChapterSelect(href)
+      } else if (view === 'reader') {
+        // If on reader screen, navigate within reader
+        handleNavigateChapter(href)
+      }
+    }
+
+    if (currentView === 'landing') {
+      // No navigation needed on landing page
+      registerNavigation(() => {})
+    } else {
+      registerNavigation(navigateFromSidebar)
+    }
+
+    return () => {
+      // Clear when switching to landing page
+      if (currentViewRef.current === 'landing') {
+        registerNavigation(() => {})
+      }
+    }
+  }, [currentView, registerNavigation, handleChapterSelect, handleNavigateChapter])
+
   return (
     <AppShell
       title={metadata?.title}
@@ -94,23 +131,27 @@ function AppContent() {
           onTocLoaded={setToc}
         />
       )}
-      {currentView === 'landing' ? (
-        <Landing onBookLoaded={handleBookLoaded} />
-      ) : currentView === 'toc' ? (
-        <TocScreen
-          toc={toc}
-          onSelectChapter={handleChapterSelect}
-          bookTitle={metadata?.title || 'Untitled'}
-        />
-      ) : currentView === 'reader' && bookData && currentChapterHref ? (
-        <Reader
-          data={bookData}
-          loading={loading}
-          initialLocation={currentChapterHref}
-          onNavigateChapter={handleNavigateChapter}
-          onChapterChange={handleChapterChange}
-        />
-      ) : null}
+      <AnimatePresence mode="wait">
+        {currentView === 'landing' ? (
+          <Landing key="landing" onBookLoaded={handleBookLoaded} />
+        ) : currentView === 'toc' ? (
+          <TocScreen
+            key="toc"
+            toc={toc}
+            onSelectChapter={handleChapterSelect}
+            bookTitle={metadata?.title || 'Untitled'}
+          />
+        ) : currentView === 'reader' && bookData && currentChapterHref ? (
+          <Reader
+            key="reader"
+            data={bookData}
+            loading={loading}
+            initialLocation={currentChapterHref}
+            onNavigateChapter={handleNavigateChapter}
+            onChapterChange={handleChapterChange}
+          />
+        ) : null}
+      </AnimatePresence>
     </AppShell>
   )
 }
@@ -118,9 +159,11 @@ function AppContent() {
 function App() {
   return (
     <ThemeProvider>
-      <SidebarProvider>
-        <AppContent />
-      </SidebarProvider>
+      <ToastProvider>
+        <SidebarProvider>
+          <AppContent />
+        </SidebarProvider>
+      </ToastProvider>
     </ThemeProvider>
   )
 }

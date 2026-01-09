@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { motion } from 'framer-motion'
 import ePub from 'epubjs'
 import type { Rendition, Book } from 'epubjs'
 import { usePersistence } from '../../hooks/usePersistence'
@@ -31,6 +32,9 @@ export function Reader({ data, loading, initialLocation, onNavigateChapter, onCh
   const prevChapter = currentIndex > 0 ? flattenedToc[currentIndex - 1] : null
   const nextChapter = currentIndex >= 0 && currentIndex < flattenedToc.length - 1 ? flattenedToc[currentIndex + 1] : null
 
+  // Note: Navigation is handled at App level to support both TOC and Reader views
+  // The Reader's onNavigateChapter is passed to App's handleNavigateChapter
+
   // Report chapter change and save last chapter
   useEffect(() => {
     if (initialLocation && currentIndex >= 0) {
@@ -42,7 +46,7 @@ export function Reader({ data, loading, initialLocation, onNavigateChapter, onCh
     }
   }, [initialLocation, currentIndex, onChapterChange, saveLastChapter])
 
-  // 1. Initialize Engine
+  // 1. Initialize Book Engine (runs once when data is loaded)
   useEffect(() => {
     if (!data || loading || !viewerRef.current) return
 
@@ -73,13 +77,16 @@ export function Reader({ data, loading, initialLocation, onNavigateChapter, onCh
         const themes = {
             oled: { 
                 body: { background: '#000000 !important', color: '#a0a0a0 !important', 'line-height': `${lineHeight} !important` },
-                p: { color: '#a0a0a0 !important' }
+                p: { color: '#a0a0a0 !important' },
+                a: { color: '#fdfbf7 !important', 'text-decoration': 'none !important' }
             },
             dark: { 
-                body: { background: '#111111 !important', color: '#cccccc !important', 'line-height': `${lineHeight} !important` }
+                body: { background: '#111111 !important', color: '#cccccc !important', 'line-height': `${lineHeight} !important` },
+                a: { color: '#fdfbf7 !important', 'text-decoration': 'none !important' }
             },
             light: { 
-                body: { background: '#fdfbf7 !important', color: '#000000 !important', 'line-height': `${lineHeight} !important` }
+                body: { background: '#fdfbf7 !important', color: '#000000 !important', 'line-height': `${lineHeight} !important` },
+                a: { color: '#1a1a1a !important', 'text-decoration': 'none !important' }
             }
         }
 
@@ -87,15 +94,28 @@ export function Reader({ data, loading, initialLocation, onNavigateChapter, onCh
         currentRendition.themes.register('dark', themes.dark)
         currentRendition.themes.register('light', themes.light)
         
+        // Inject CSS for anchor hover underline
+        currentRendition.hooks.content.register((content: any) => {
+          const style = content.document.createElement('style')
+          style.textContent = `
+            a:hover {
+              text-decoration: underline !important;
+            }
+          `
+          content.document.head.appendChild(style)
+        })
+        
         // Initial Apply
         currentRendition.themes.fontSize(`${fontSize}%`)
         currentRendition.themes.font(fontFamily)
         currentRendition.themes.select(currentTheme)
 
-        await currentRendition.display(initialLocation)
-        
-        // Force re-apply theme after render to prevent white flash
-        currentRendition.themes.select(currentTheme)
+        // Display initial location
+        if (initialLocation) {
+          await currentRendition.display(initialLocation)
+          // Force re-apply theme after render to prevent white flash
+          currentRendition.themes.select(currentTheme)
+        }
         
         if (active) {
             setRendition(currentRendition)
@@ -118,7 +138,25 @@ export function Reader({ data, loading, initialLocation, onNavigateChapter, onCh
       if (currentRendition) try { currentRendition.destroy() } catch (e) {}
       if (book) try { book.destroy() } catch (e) {}
     }
-  }, [data, loading, initialLocation])
+  }, [data, loading, lineHeight, fontSize, fontFamily, currentTheme]) // Removed initialLocation dependency
+
+  // 2. Navigate to chapter when initialLocation changes (optimized - no book reload)
+  useEffect(() => {
+    if (!rendition || !initialLocation) return
+
+    const navigate = async () => {
+      try {
+        await rendition.display(initialLocation)
+        // Force re-apply theme after render to prevent white flash
+        rendition.themes.select(currentTheme)
+        if (containerRef.current) containerRef.current.scrollTop = 0
+      } catch (err) {
+        console.error('Error navigating to chapter:', err)
+      }
+    }
+
+    navigate()
+  }, [rendition, initialLocation, currentTheme])
 
   // 2. Settings Updates
   useEffect(() => {
@@ -137,13 +175,16 @@ export function Reader({ data, loading, initialLocation, onNavigateChapter, onCh
     // Re-register all themes with updated line-height to prevent glitches
     rendition.themes.register('oled', { 
         body: { background: '#000000 !important', color: '#a0a0a0 !important', 'line-height': `${lineHeight} !important` },
-        p: { color: '#a0a0a0 !important' }
+        p: { color: '#a0a0a0 !important' },
+        a: { color: '#ffffff !important', 'text-decoration': 'none !important' }
     })
     rendition.themes.register('dark', { 
-        body: { background: '#111111 !important', color: '#cccccc !important', 'line-height': `${lineHeight} !important` }
+        body: { background: '#111111 !important', color: '#cccccc !important', 'line-height': `${lineHeight} !important` },
+        a: { color: '#ffffff !important', 'text-decoration': 'none !important' }
     })
     rendition.themes.register('light', { 
-        body: { background: '#fdfbf7 !important', color: '#000000 !important', 'line-height': `${lineHeight} !important` }
+        body: { background: '#fdfbf7 !important', color: '#000000 !important', 'line-height': `${lineHeight} !important` },
+        a: { color: '#1a1a1a !important', 'text-decoration': 'none !important' }
     })
     
     rendition.themes.select(currentTheme)
@@ -173,14 +214,20 @@ export function Reader({ data, loading, initialLocation, onNavigateChapter, onCh
   const buttonDisabledClass = "opacity-0 cursor-default"
 
   return (
-    <SmoothScroll
-      className="flex flex-col h-full w-full max-w-[100vw] overflow-x-hidden"
-      options={{
-        duration: 2.0, // Slow/Cinematic scroll
-        wheelMultiplier: 0.8, // Reduced wheel sensitivity
-        smoothWheel: true,
-      }}
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3, ease: "easeOut" }}
+      className="h-full w-full"
     >
+      <SmoothScroll
+        className="flex flex-col h-full w-full max-w-[100vw] overflow-x-hidden"
+        options={{
+          duration: 2.0, // Slow/Cinematic scroll
+          wheelMultiplier: 0.8, // Reduced wheel sensitivity
+          smoothWheel: true,
+        }}
+      >
       <div 
           ref={containerRef}
           className="flex flex-col h-full w-full overflow-y-auto overflow-x-hidden"
@@ -217,5 +264,6 @@ export function Reader({ data, loading, initialLocation, onNavigateChapter, onCh
       </div>
       </div>
     </SmoothScroll>
+    </motion.div>
   )
 }

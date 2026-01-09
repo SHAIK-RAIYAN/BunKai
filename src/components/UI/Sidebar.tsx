@@ -1,19 +1,40 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTheme } from '../../context/ThemeContext'
 import { usePersistence } from '../../hooks/usePersistence'
-import type { TocItem } from '../Layout/SidebarContext'
+import { useSidebar, type TocItem } from '../Layout/SidebarContext'
 
 interface SidebarProps {
   toc: TocItem[]
   isOpen: boolean
-  onNavigate: (href: string) => void
   onClose: () => void
 }
 
-export function Sidebar({ toc, isOpen, onNavigate, onClose }: SidebarProps) {
+export function Sidebar({ toc, isOpen, onClose }: SidebarProps) {
   const { currentTheme } = useTheme()
   const { getSidebarScroll, saveSidebarScroll } = usePersistence()
+  const { navigate } = useSidebar()
   const scrollContainerRef = useRef<HTMLDivElement>(null)
+  const [searchTerm, setSearchTerm] = useState('')
+
+  // Helper to filter nested TOC
+  const filterToc = (items: TocItem[], term: string): TocItem[] => {
+    if (!term) return items
+    const lowerTerm = term.toLowerCase()
+    return items.reduce((acc: TocItem[], item) => {
+      const matchesSelf = item.label.toLowerCase().includes(lowerTerm)
+      const matchedSubitems = item.subitems ? filterToc(item.subitems, term) : []
+      
+      if (matchesSelf || matchedSubitems.length > 0) {
+        acc.push({
+          ...item,
+          subitems: matchedSubitems.length > 0 ? matchedSubitems : item.subitems 
+        })
+      }
+      return acc
+    }, [])
+  }
+
+  const filteredToc = filterToc(toc, searchTerm)
 
   // Restore scroll position on mount
   useEffect(() => {
@@ -47,8 +68,7 @@ export function Sidebar({ toc, isOpen, onNavigate, onClose }: SidebarProps) {
   }, [isOpen, saveSidebarScroll])
 
   const handleChapterClick = (href: string) => {
-    onNavigate(href)
-    onClose()
+    navigate(href)
   }
 
   const renderTocItems = (items: TocItem[], level = 0) => {
@@ -117,7 +137,7 @@ export function Sidebar({ toc, isOpen, onNavigate, onClose }: SidebarProps) {
               borderColor: currentTheme === 'light' ? 'rgba(229, 231, 235, 1)' : 'rgba(255, 255, 255, 0.1)',
             }}
           >
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between mb-4">
               <h2
                 className="text-lg font-semibold"
                 style={{
@@ -155,6 +175,19 @@ export function Sidebar({ toc, isOpen, onNavigate, onClose }: SidebarProps) {
                 </svg>
               </button>
             </div>
+            {/* Search Input */}
+            <input
+              type="text"
+              placeholder="Search chapters..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full px-3 py-2 rounded text-sm border transition-colors"
+              style={{
+                backgroundColor: currentTheme === 'light' ? 'rgba(255, 255, 255, 0.8)' : 'rgba(255, 255, 255, 0.05)',
+                borderColor: currentTheme === 'light' ? 'rgba(229, 231, 235, 1)' : 'rgba(255, 255, 255, 0.1)',
+                color: 'var(--text-primary)',
+              }}
+            />
           </div>
 
           {/* Scrollable Content */}
@@ -168,8 +201,17 @@ export function Sidebar({ toc, isOpen, onNavigate, onClose }: SidebarProps) {
               >
                 No chapters available
               </div>
+            ) : filteredToc.length === 0 ? (
+              <div
+                className="px-6 py-4 text-sm opacity-60"
+                style={{
+                  color: 'var(--text-primary)',
+                }}
+              >
+                No chapters found
+              </div>
             ) : (
-              renderTocItems(toc)
+              renderTocItems(filteredToc)
             )}
           </div>
         </div>
