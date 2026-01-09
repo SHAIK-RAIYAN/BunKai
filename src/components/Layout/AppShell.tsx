@@ -14,7 +14,7 @@ interface AppShellProps {
 
 export function AppShell({ children, title, showBackButton, onBackToToc }: AppShellProps) {
   const [settingsOpen, setSettingsOpen] = useState(false)
-  const { isOpen, toc, navigate, closeSidebar, toggleSidebar } = useSidebar()
+  const { isOpen, toc, closeSidebar, toggleSidebar } = useSidebar()
 
   return (
     <div
