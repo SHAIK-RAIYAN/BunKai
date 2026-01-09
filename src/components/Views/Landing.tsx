@@ -1,5 +1,7 @@
 import { useRef, useState } from 'react'
+import { motion } from 'framer-motion'
 import { usePersistence } from '../../hooks/usePersistence'
+import { useToast } from '../../context/ToastContext'
 
 interface LandingProps {
   onBookLoaded: () => void
@@ -9,10 +11,11 @@ export function Landing({ onBookLoaded }: LandingProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isDragging, setIsDragging] = useState(false)
   const { saveBookToDevice } = usePersistence()
+  const { addToast } = useToast()
 
   const handleFileSelect = async (file: File) => {
     if (!file.name.toLowerCase().endsWith('.epub')) {
-      alert('Please select a valid .epub file')
+      addToast('Please select a valid .epub file', 'error')
       return
     }
 
@@ -21,7 +24,7 @@ export function Landing({ onBookLoaded }: LandingProps) {
       onBookLoaded()
     } catch (error) {
       console.error('Failed to save book:', error)
-      alert('Failed to load book. Please try again.')
+      addToast('Failed to load book. Please try again.', 'error')
     }
   }
 
@@ -63,7 +66,10 @@ export function Landing({ onBookLoaded }: LandingProps) {
   }
 
   return (
-    <div
+    <motion.div
+      initial={{ opacity: 1 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.3, ease: "easeIn" }}
       className="h-full w-full overflow-y-auto relative"
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
@@ -71,9 +77,22 @@ export function Landing({ onBookLoaded }: LandingProps) {
     >
       {/* Inner container ensures centering and minimum height */}
       <div className="min-h-full flex flex-col items-center justify-center p-8">
-        <div className="text-center z-10 pointer-events-none">
+        <motion.div 
+          className="text-center z-10 pointer-events-none"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+        >
+          <motion.img 
+            src="/Bunkai-Chi-logo.png" 
+            alt="BunKai Chi Logo" 
+            className="h-32 w-auto mx-auto mb-1"
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.1, ease: "easeOut" }}
+          />
           <h1
-            className="text-6xl font-light mb-4 tracking-tight"
+            className="text-4xl font-light mb-4 tracking-tight"
             style={{ color: 'var(--text-primary)' }}
           >
             BunKai
@@ -94,7 +113,7 @@ export function Landing({ onBookLoaded }: LandingProps) {
           >
             Browse
           </button>
-        </div>
+        </motion.div>
       </div>
 
       {/* Hidden File Input */}
@@ -125,6 +144,6 @@ export function Landing({ onBookLoaded }: LandingProps) {
           </div>
         </div>
       )}
-    </div>
+    </motion.div>
   )
 }

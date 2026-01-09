@@ -1,3 +1,4 @@
+import { motion, AnimatePresence } from 'framer-motion'
 import { useTheme } from '../../context/ThemeContext'
 
 interface SettingsPanelProps {
@@ -17,25 +18,33 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
     setFontFamily,
   } = useTheme()
 
-  if (!isOpen) return null
-
   return (
-    <>
-      {/* Backdrop */}
-      <div
-        className="fixed inset-0 z-50 bg-black/20"
-        onClick={onClose}
-        aria-hidden="true"
-      />
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-50 bg-black/20"
+            onClick={onClose}
+            aria-hidden="true"
+          />
 
-      {/* Panel */}
-      <div
-        className="fixed top-16 right-4 z-50 w-80 rounded-lg shadow-2xl border"
-        style={{
-          backgroundColor: currentTheme === 'light' ? 'rgba(255, 255, 255, 0.95)' : 'rgba(0, 0, 0, 0.9)',
-          borderColor: currentTheme === 'light' ? 'rgba(229, 231, 235, 1)' : 'rgba(255, 255, 255, 0.1)',
-        }}
-      >
+          {/* Panel */}
+          <motion.div
+            initial={{ opacity: 0, x: 20, scale: 0.95 }}
+            animate={{ opacity: 1, x: 0, scale: 1 }}
+            exit={{ opacity: 0, x: 20, scale: 0.95 }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+            className="fixed top-16 right-4 z-50 w-80 rounded-lg shadow-2xl border"
+            style={{
+              backgroundColor: currentTheme === 'light' ? 'rgba(255, 255, 255, 0.95)' : 'rgba(0, 0, 0, 0.9)',
+              borderColor: currentTheme === 'light' ? 'rgba(229, 231, 235, 1)' : 'rgba(255, 255, 255, 0.1)',
+            }}
+          >
         <div className="p-6">
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
@@ -196,8 +205,10 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
             </div>
           </div>
         </div>
-      </div>
-    </>
+      </motion.div>
+        </>
+      )}
+    </AnimatePresence>
   )
 }
 

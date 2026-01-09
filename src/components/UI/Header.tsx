@@ -1,5 +1,6 @@
 import { HiMenu, HiCog } from 'react-icons/hi'
 import { CiViewTable } from "react-icons/ci";
+import { motion } from 'framer-motion'
 import { useTheme } from '../../context/ThemeContext'
 
 interface HeaderProps {
@@ -24,7 +25,10 @@ export function Header({
   const { currentTheme } = useTheme()
 
   return (
-    <header
+    <motion.header
+      initial={{ y: -20, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
       className="fixed top-0 left-0 right-0 h-16 flex items-center justify-between px-4 z-40 backdrop-blur-md border-b"
       style={{
         backgroundColor: currentTheme === 'light' ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)',
@@ -55,14 +59,21 @@ export function Header({
       
 
       {/* Center: Title */}
-      <div className="flex flex-col items-center justify-center transition-opacity duration-300">
-        <h1
-          className="text-sm font-medium tracking-wide max-w-md truncate"
-          style={{ color: 'var(--text-primary)' }}
-        >
-          {'BunKai'}
-        </h1>
-        {title}
+      <div className="flex items-center justify-center transition-opacity duration-300">
+        <div className="flex flex-col items-center justify-center">
+          <h1
+            className="text-sm font-medium tracking-wide max-w-md truncate flex items-center justify-center"
+            style={{ color: 'var(--text-primary)' }}
+          >
+            <img 
+          src="/Bunkai-Chi-logo.png" 
+          alt="BunKai Chi Logo" 
+          className="h-6 w-6 mr-1" 
+        />
+            {'BunKai'}
+          </h1>
+          {title}
+        </div>
       </div>
 
 <div>
@@ -104,7 +115,7 @@ export function Header({
         <HiCog className="w-6 h-6" />
       </button>
           </div>
-    </header>
+    </motion.header>
   )
 }
 

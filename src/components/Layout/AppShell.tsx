@@ -32,7 +32,7 @@ export function AppShell({ children, title, showBackButton, onBackToToc }: AppSh
         onBackToToc={onBackToToc}
       />
 
-      <Sidebar toc={toc} isOpen={isOpen} onNavigate={navigate} onClose={closeSidebar} />
+      <Sidebar toc={toc} isOpen={isOpen} onClose={closeSidebar} />
 
       {/* Main Content: Anchored absolutely to ensure exact fit */}
       <main className="absolute top-16 bottom-0 left-0 right-0">

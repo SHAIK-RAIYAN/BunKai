@@ -1,4 +1,5 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { motion } from 'framer-motion'
 import { useTheme } from '../../context/ThemeContext'
 import { usePersistence } from '../../hooks/usePersistence'
 import type { TocItem } from '../Layout/SidebarContext'
@@ -13,6 +14,27 @@ export function TocScreen({ toc, onSelectChapter, bookTitle }: TocScreenProps) {
   const { currentTheme } = useTheme()
   const { getTocScroll, saveTocScroll } = usePersistence()
   const scrollContainerRef = useRef<HTMLDivElement>(null)
+  const [searchTerm, setSearchTerm] = useState('')
+
+  // Helper to filter nested TOC
+  const filterToc = (items: TocItem[], term: string): TocItem[] => {
+    if (!term) return items
+    const lowerTerm = term.toLowerCase()
+    return items.reduce((acc: TocItem[], item) => {
+      const matchesSelf = item.label.toLowerCase().includes(lowerTerm)
+      const matchedSubitems = item.subitems ? filterToc(item.subitems, term) : []
+      
+      if (matchesSelf || matchedSubitems.length > 0) {
+        acc.push({
+          ...item,
+          subitems: matchedSubitems.length > 0 ? matchedSubitems : item.subitems 
+        })
+      }
+      return acc
+    }, [])
+  }
+
+  const filteredToc = filterToc(toc, searchTerm)
 
   // Restore scroll position on mount
   useEffect(() => {
@@ -71,13 +93,21 @@ export function TocScreen({ toc, onSelectChapter, bookTitle }: TocScreenProps) {
   }
 
   return (
-    <div
+    <motion.div
       ref={scrollContainerRef}
       className="h-full w-full overflow-y-auto overflow-x-hidden flex flex-col items-center"
       style={{ backgroundColor: 'var(--bg-primary)' }}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: "easeOut" }}
     >
       {/* Title Section */}
-      <div className="w-full max-w-4xl px-8 py-12 text-center">
+      <motion.div 
+        className="w-full max-w-4xl px-8 py-12 text-center"
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.1, ease: "easeOut" }}
+      >
         <h1
           className="text-4xl md:text-5xl font-bold mb-4"
           style={{ color: 'var(--text-primary)' }}
@@ -90,7 +120,31 @@ export function TocScreen({ toc, onSelectChapter, bookTitle }: TocScreenProps) {
         >
           Table of Contents
         </div>
-      </div>
+      </motion.div>
+
+      {/* Search Box - Sticky */}
+      <motion.div 
+        className="sticky top-0 z-10 w-full max-w-4xl px-8 py-4 mb-6 backdrop-blur-md"
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: 0.15, ease: "easeOut" }}
+        style={{
+          backgroundColor: currentTheme === 'light' ? 'rgba(253, 251, 247, 0.9)' : 'rgba(0, 0, 0, 0.8)',
+        }}
+      >
+        <input
+          type="text"
+          placeholder="Search chapters..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full px-4 py-3 rounded-lg text-base border transition-colors"
+          style={{
+            backgroundColor: currentTheme === 'light' ? 'rgba(255, 255, 255, 0.8)' : 'rgba(255, 255, 255, 0.05)',
+            borderColor: currentTheme === 'light' ? 'rgba(229, 231, 235, 1)' : 'rgba(255, 255, 255, 0.1)',
+            color: 'var(--text-primary)',
+          }}
+        />
+      </motion.div>
 
       {/* TOC List */}
       <div className="w-full max-w-4xl px-8 pb-12">
@@ -101,11 +155,18 @@ export function TocScreen({ toc, onSelectChapter, bookTitle }: TocScreenProps) {
           >
             No chapters available
           </div>
+        ) : filteredToc.length === 0 ? (
+          <div
+            className="text-center py-12 opacity-60"
+            style={{ color: 'var(--text-primary)' }}
+          >
+            No chapters found
+          </div>
         ) : (
-          <div className="space-y-1">{renderTocItems(toc)}</div>
+          <div className="space-y-1">{renderTocItems(filteredToc)}</div>
         )}
       </div>
-    </div>
+    </motion.div>
   )
 }
 
