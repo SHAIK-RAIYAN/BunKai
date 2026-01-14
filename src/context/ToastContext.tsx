@@ -9,10 +9,19 @@ interface Toast {
   id: string
   message: string
   type: ToastType
+  actionLabel?: string
+  onAction?: () => void
 }
 
 interface ToastContextType {
-  addToast: (message: string, type?: ToastType) => void
+  addToast: (
+    message: string,
+    type?: ToastType,
+    options?: {
+      actionLabel?: string
+      onAction?: () => void
+    },
+  ) => void
 }
 
 const ToastContext = createContext<ToastContextType | null>(null)
@@ -31,11 +40,18 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     setToasts((prev) => prev.filter((t) => t.id !== id))
   }, [])
 
-  const addToast = useCallback((message: string, type: ToastType = 'info') => {
-    const id = Math.random().toString(36).substr(2, 9)
-    setToasts((prev) => [...prev, { id, message, type }])
-    setTimeout(() => removeToast(id), 5000)
-  }, [removeToast])
+  const addToast = useCallback(
+    (
+      message: string,
+      type: ToastType = 'info',
+      options?: { actionLabel?: string; onAction?: () => void },
+    ) => {
+      const id = Math.random().toString(36).substr(2, 9)
+      setToasts((prev) => [...prev, { id, message, type, ...options }])
+      setTimeout(() => removeToast(id), 5000)
+    },
+    [removeToast],
+  )
 
   return (
     <ToastContext.Provider value={{ addToast }}>
@@ -61,14 +77,32 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                 {toast.type === 'info' && <HiInformationCircle className="w-5 h-5 text-blue-500" />}
                 <p className="text-sm font-medium">{toast.message}</p>
               </div>
-              <button
-                onClick={() => removeToast(toast.id)}
-                className={`p-1 rounded transition-colors ${
-                  currentTheme === 'light' ? 'hover:bg-gray-100' : 'hover:bg-white/10'
-                }`}
-              >
-                <HiX className="w-4 h-4 opacity-50" />
-              </button>
+              <div className="flex items-center gap-2">
+                {toast.onAction && toast.actionLabel && (
+                  <button
+                    onClick={() => {
+                      toast.onAction?.()
+                      removeToast(toast.id)
+                    }}
+                    // FIXED: Dynamic classes based on theme for visibility
+                    className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
+                      currentTheme === 'light'
+                        ? 'bg-gray-900 text-white hover:bg-gray-800'
+                        : 'bg-white/10 text-white hover:bg-white/20'
+                    }`}
+                  >
+                    {toast.actionLabel}
+                  </button>
+                )}
+                <button
+                  onClick={() => removeToast(toast.id)}
+                  className={`p-1 rounded transition-colors ${
+                    currentTheme === 'light' ? 'hover:bg-gray-100' : 'hover:bg-white/10'
+                  }`}
+                >
+                  <HiX className="w-4 h-4 opacity-50" />
+                </button>
+              </div>
             </motion.div>
           ))}
         </AnimatePresence>
@@ -76,4 +110,3 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     </ToastContext.Provider>
   )
 }
-

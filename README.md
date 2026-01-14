@@ -131,3 +131,51 @@ Please feel free to reach out or submit a pull request. Together, we can build a
 
 Built with ❤️ for readers who value simplicity, performance, and the timeless joy of reading. 
 *"The more that you read, the more things you will know. The more that you learn, the more places you'll go."* — Dr. Seuss
+
+```
+BunKai
+├─ eslint.config.js
+├─ index.html
+├─ package-lock.json
+├─ package.json
+├─ public
+│  └─ Bunkai-Chi-logo.png
+├─ README.md
+├─ src
+│  ├─ App.tsx
+│  ├─ assets
+│  │  └─ react.svg
+│  ├─ components
+│  │  ├─ BookParser.tsx
+│  │  ├─ Layout
+│  │  │  ├─ AppShell.tsx
+│  │  │  ├─ HudContext.tsx
+│  │  │  └─ SidebarContext.tsx
+│  │  ├─ Reader
+│  │  │  └─ Reader.tsx
+│  │  ├─ UI
+│  │  │  ├─ Header.tsx
+│  │  │  ├─ SettingsPanel.tsx
+│  │  │  ├─ Sidebar.tsx
+│  │  │  └─ SmoothScroll.tsx
+│  │  └─ Views
+│  │     ├─ Landing.tsx
+│  │     └─ TocScreen.tsx
+│  ├─ context
+│  │  ├─ ThemeContext.tsx
+│  │  └─ ToastContext.tsx
+│  ├─ hooks
+│  │  └─ usePersistence.ts
+│  ├─ index.css
+│  ├─ lib
+│  │  └─ tocUtils.ts
+│  ├─ main.tsx
+│  └─ types
+│     └─ index.ts
+├─ tsconfig.app.json
+├─ tsconfig.json
+├─ tsconfig.node.json
+├─ vercel.json
+└─ vite.config.ts
+
+```

@@ -10,9 +10,10 @@ interface AppShellProps {
   title?: string
   showBackButton?: boolean
   onBackToToc?: () => void
+  onResetBook?: () => void
 }
 
-export function AppShell({ children, title, showBackButton, onBackToToc }: AppShellProps) {
+export function AppShell({ children, title, showBackButton, onBackToToc, onResetBook }: AppShellProps) {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const { isOpen, toc, closeSidebar, toggleSidebar } = useSidebar()
 
@@ -39,7 +40,11 @@ export function AppShell({ children, title, showBackButton, onBackToToc }: AppSh
         <HudProvider onKeepHudOpen={() => {}}>{children}</HudProvider>
       </main>
 
-      <SettingsPanel isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
+      <SettingsPanel
+        isOpen={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        onResetBook={onResetBook}
+      />
     </div>
   )
 }

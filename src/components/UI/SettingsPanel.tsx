@@ -1,14 +1,16 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { useTheme } from '../../context/ThemeContext'
+import { useToast } from '../../context/ToastContext'
 
 interface SettingsPanelProps {
   isOpen: boolean
   onClose: () => void
+  onResetBook?: () => void
 }
 
 const FONT_FAMILIES = ['Helvetica', 'Georgia', 'Merriweather']
 
-export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
+export function SettingsPanel({ isOpen, onClose, onResetBook }: SettingsPanelProps) {
   const {
     currentTheme,
     setCurrentTheme,
@@ -17,6 +19,7 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
     fontFamily,
     setFontFamily,
   } = useTheme()
+  const { addToast } = useToast()
 
   return (
     <AnimatePresence>
@@ -27,7 +30,7 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
+            transition={{ duration: 0.1 }}
             className="fixed inset-0 z-50 bg-black/20"
             onClick={onClose}
             aria-hidden="true"
@@ -38,7 +41,7 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
             initial={{ opacity: 0, x: 20, scale: 0.95 }}
             animate={{ opacity: 1, x: 0, scale: 1 }}
             exit={{ opacity: 0, x: 20, scale: 0.95 }}
-            transition={{ duration: 0.3, ease: "easeOut" }}
+            transition={{ duration: 0.1, ease: "easeOut" }}
             className="fixed top-16 right-4 z-50 w-80 rounded-lg shadow-2xl border"
             style={{
               backgroundColor: currentTheme === 'light' ? 'rgba(255, 255, 255, 0.95)' : 'rgba(0, 0, 0, 0.9)',
@@ -203,6 +206,25 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                 </button>
               ))}
             </div>
+          </div>
+
+          {/* Danger Zone */}
+          <div className="mt-8 pt-6 border-t border-gray-200/10">
+            <button
+              onClick={() => {
+                addToast('Close current book and return to landing?', 'info', {
+                  actionLabel: 'Close book',
+                  onAction: () => {
+                    onResetBook?.()
+                    addToast('Book closed. Returning to landing.', 'success')
+                    onClose()
+                  },
+                })
+              }}
+              className="w-full py-2 rounded text-sm font-medium text-red-500 hover:bg-red-500/10 transition-colors"
+            >
+              Close Book
+            </button>
           </div>
         </div>
       </motion.div>

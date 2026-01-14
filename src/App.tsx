@@ -22,7 +22,7 @@ function AppContent() {
   const [currentView, setCurrentView] = useState<ViewState>('landing')
   const [currentChapterHref, setCurrentChapterHref] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
-  const { loadBookFromDevice, getLastChapter } = usePersistence()
+  const { loadBookFromDevice, getLastChapter, clearBook } = usePersistence()
   const { setToc: setSidebarToc, registerNavigation } = useSidebar()
   const currentViewRef = useRef(currentView)
   
@@ -89,6 +89,17 @@ function AppContent() {
     setCurrentChapterHref(href)
   }
 
+  const handleResetBook = async () => {
+    setLoading(true)
+    await clearBook()
+    setBookData(null)
+    setMetadata(null)
+    setToc([])
+    setCurrentChapterHref(null)
+    setCurrentView('landing')
+    setLoading(false)
+  }
+
   // Register navigation function for sidebar - works for both TOC and Reader views
   useEffect(() => {
     const navigateFromSidebar = (href: string) => {
@@ -123,6 +134,7 @@ function AppContent() {
       title={metadata?.title}
       showBackButton={currentView === 'reader'}
       onBackToToc={handleBackToToc}
+      onResetBook={handleResetBook}
     >
       {bookData && (
         <BookParser
