@@ -132,25 +132,25 @@ function AppContent() {
         />
       )}
       <AnimatePresence mode="wait">
-        {currentView === 'landing' ? (
+      {currentView === 'landing' ? (
           <Landing key="landing" onBookLoaded={handleBookLoaded} />
-        ) : currentView === 'toc' ? (
-          <TocScreen
+      ) : currentView === 'toc' ? (
+        <TocScreen
             key="toc"
-            toc={toc}
-            onSelectChapter={handleChapterSelect}
-            bookTitle={metadata?.title || 'Untitled'}
-          />
-        ) : currentView === 'reader' && bookData && currentChapterHref ? (
-          <Reader
+          toc={toc}
+          onSelectChapter={handleChapterSelect}
+          bookTitle={metadata?.title || 'Untitled'}
+        />
+      ) : currentView === 'reader' && bookData && currentChapterHref ? (
+        <Reader
             key="reader"
-            data={bookData}
-            loading={loading}
-            initialLocation={currentChapterHref}
-            onNavigateChapter={handleNavigateChapter}
-            onChapterChange={handleChapterChange}
-          />
-        ) : null}
+          data={bookData}
+          loading={loading}
+          initialLocation={currentChapterHref}
+          onNavigateChapter={handleNavigateChapter}
+          onChapterChange={handleChapterChange}
+        />
+      ) : null}
       </AnimatePresence>
     </AppShell>
   )
@@ -160,9 +160,9 @@ function App() {
   return (
     <ThemeProvider>
       <ToastProvider>
-        <SidebarProvider>
-          <AppContent />
-        </SidebarProvider>
+      <SidebarProvider>
+        <AppContent />
+      </SidebarProvider>
       </ToastProvider>
     </ThemeProvider>
   )
