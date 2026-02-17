@@ -3,7 +3,7 @@
 > A production-grade, high-performance Web EPUB Reader built for the modern web.  
 > **Currently supports EPUB files only.**
 
-🌐 **Live Demo:** [https://bunkai-reader.vercel.app/](https://bunkai-reader.vercel.app/)
+🌐 **Live Demo:** [https://bunkai-reader.raiyan.app/](https://bunkai-reader.raiyan.app/)
 
 *"A reader lives a thousand lives before he dies. The man who never reads lives only one."* — George R.R. Martin
 
