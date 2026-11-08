@@ -1,38 +1,41 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react'
-import type { ThemeMode } from '../types'
+import type {
+  ThemeMode,
+  EpubReadingMode,
+  PdfAppearanceMode,
+  PdfImageTreatment,
+  ReaderSettings,
+} from '../types'
 
-interface Settings {
-  theme: ThemeMode
-  fontSize: number
-  fontFamily: string
-  lineHeight: number
-}
-
-interface ThemeContextType {
-  currentTheme: ThemeMode
+interface ThemeContextType extends ReaderSettings {
   setCurrentTheme: (theme: ThemeMode) => void
-  fontSize: number
   setFontSize: (size: number) => void
-  fontFamily: string
   setFontFamily: (font: string) => void
-  lineHeight: number
   setLineHeight: (height: number) => void
+  setEpubReadingMode: (mode: EpubReadingMode) => void
+  setPdfAppearanceMode: (mode: PdfAppearanceMode) => void
+  setPdfImageTreatment: (treatment: PdfImageTreatment) => void
+  setAutoScrollSpeed: (speed: number) => void
+  currentTheme: ThemeMode // Backwards compatibility alias
 }
 
 const ThemeContext = createContext<ThemeContextType | null>(null)
 
 const SETTINGS_KEY = 'bunkai_settings'
 
-const DEFAULT_SETTINGS: Settings = {
+const DEFAULT_SETTINGS: ReaderSettings = {
   theme: 'oled',
   fontSize: 100,
   fontFamily: 'Helvetica',
   lineHeight: 1.5,
+  epubReadingMode: 'paginated',
+  pdfAppearanceMode: 'dark',
+  pdfImageTreatment: 'preserve',
+  autoScrollSpeed: 45,
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  // Initialize state from localStorage
-  const [settings, setSettings] = useState<Settings>(() => {
+  const [settings, setSettings] = useState<ReaderSettings>(() => {
     try {
       const stored = localStorage.getItem(SETTINGS_KEY)
       return stored ? { ...DEFAULT_SETTINGS, ...JSON.parse(stored) } : DEFAULT_SETTINGS
@@ -41,7 +44,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     }
   })
 
-  // Persist to localStorage
+  // Persist settings changes
   useEffect(() => {
     try {
       localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings))
@@ -62,7 +65,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     switch (settings.theme) {
       case 'oled':
         bgColor = '#000000'
-        textColor = '#a0a0a0' // Adjusted for high contrast
+        textColor = '#a0a0a0'
         break
       case 'dark':
         bgColor = '#111111'
@@ -74,20 +77,17 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         break
     }
 
-    // Set CSS variables
     root.style.setProperty('--bg-primary', bgColor)
     root.style.setProperty('--text-primary', textColor)
 
-    // Set scrollbar colors based on theme
     if (settings.theme === 'light') {
       root.style.setProperty('--scrollbar-thumb', '#cbd5e1')
       root.style.setProperty('--scrollbar-thumb-hover', '#94a3b8')
     } else {
-      root.style.setProperty('--scrollbar-thumb', '#333')
-      root.style.setProperty('--scrollbar-thumb-hover', '#555')
+      root.style.setProperty('--scrollbar-thumb', '#333333')
+      root.style.setProperty('--scrollbar-thumb-hover', '#555555')
     }
 
-    // Apply background to body and root element to prevent white gaps
     body.style.backgroundColor = bgColor
     if (rootElement) {
       rootElement.style.backgroundColor = bgColor
@@ -96,21 +96,23 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     root.setAttribute('data-theme', settings.theme)
   }, [settings.theme])
 
-  const updateSettings = (key: keyof Settings, value: any) => {
+  const updateSetting = <K extends keyof ReaderSettings>(key: K, value: ReaderSettings[K]) => {
     setSettings((prev) => ({ ...prev, [key]: value }))
   }
 
   return (
     <ThemeContext.Provider
       value={{
+        ...settings,
         currentTheme: settings.theme,
-        setCurrentTheme: (t) => updateSettings('theme', t),
-        fontSize: settings.fontSize,
-        setFontSize: (s) => updateSettings('fontSize', s),
-        fontFamily: settings.fontFamily,
-        setFontFamily: (f) => updateSettings('fontFamily', f),
-        lineHeight: settings.lineHeight,
-        setLineHeight: (l) => updateSettings('lineHeight', l),
+        setCurrentTheme: (t) => updateSetting('theme', t),
+        setFontSize: (s) => updateSetting('fontSize', s),
+        setFontFamily: (f) => updateSetting('fontFamily', f),
+        setLineHeight: (l) => updateSetting('lineHeight', l),
+        setEpubReadingMode: (m) => updateSetting('epubReadingMode', m),
+        setPdfAppearanceMode: (m) => updateSetting('pdfAppearanceMode', m),
+        setPdfImageTreatment: (t) => updateSetting('pdfImageTreatment', t),
+        setAutoScrollSpeed: (s) => updateSetting('autoScrollSpeed', s),
       }}
     >
       {children}
@@ -123,4 +125,3 @@ export function useTheme() {
   if (!context) throw new Error('useTheme must be used within a ThemeProvider')
   return context
 }
-

@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useCallback, type ReactNode } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'motion/react'
 import { HiCheckCircle, HiExclamationCircle, HiInformationCircle, HiX } from 'react-icons/hi'
 import { useTheme } from './ThemeContext'
 
@@ -53,30 +53,34 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     [removeToast],
   )
 
+  const isLight = currentTheme === 'light'
+
   return (
     <ToastContext.Provider value={{ addToast }}>
       {children}
-      <div className="fixed top-6 left-1/2 transform -translate-x-1/2 z-50 flex flex-col gap-2 w-full max-w-md px-4 pointer-events-none">
+      <div className="fixed top-6 left-1/2 transform -translate-x-1/2 z-50 flex flex-col gap-2 w-full max-w-md px-4 pointer-events-none select-none">
         <AnimatePresence>
           {toasts.map((toast) => (
             <motion.div
               key={toast.id}
-              initial={{ opacity: 0, y: -20, scale: 0.95 }}
+              initial={{ opacity: 0, y: -16, scale: 0.96 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -20, scale: 0.95, transition: { duration: 0.4 } }}
+              exit={{ opacity: 0, y: -16, scale: 0.96, transition: { duration: 0.2 } }}
+              transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
               layout
-              className={`pointer-events-auto flex items-center justify-between p-4 rounded-lg shadow-xl border backdrop-blur-md ${
-                currentTheme === 'light'
-                  ? 'bg-white/90 border-gray-200 text-gray-800'
+              className={`pointer-events-auto flex items-center justify-between p-3.5 rounded-xl border backdrop-blur-xl shadow-lg ${
+                isLight
+                  ? 'bg-white/95 border-gray-200 text-gray-900 shadow-[0px_2px_3px_-1px_rgba(0,0,0,0.1),0px_1px_0px_0px_rgba(25,28,33,0.02),0px_0px_0px_1px_rgba(25,28,33,0.08)]'
                   : 'bg-zinc-900/95 border-white/10 text-white'
               }`}
             >
               <div className="flex items-center gap-3">
-                {toast.type === 'success' && <HiCheckCircle className="w-5 h-5 text-green-500" />}
-                {toast.type === 'error' && <HiExclamationCircle className="w-5 h-5 text-red-500" />}
-                {toast.type === 'info' && <HiInformationCircle className="w-5 h-5 text-blue-500" />}
-                <p className="text-sm font-medium">{toast.message}</p>
+                {toast.type === 'success' && <HiCheckCircle className="w-4 h-4 text-emerald-500" />}
+                {toast.type === 'error' && <HiExclamationCircle className="w-4 h-4 text-rose-500" />}
+                {toast.type === 'info' && <HiInformationCircle className="w-4 h-4 text-sky-500" />}
+                <p className="text-xs font-medium">{toast.message}</p>
               </div>
+
               <div className="flex items-center gap-2">
                 {toast.onAction && toast.actionLabel && (
                   <button
@@ -84,9 +88,8 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                       toast.onAction?.()
                       removeToast(toast.id)
                     }}
-                    // FIXED: Dynamic classes based on theme for visibility
-                    className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
-                      currentTheme === 'light'
+                    className={`px-2.5 py-1 rounded text-xs font-medium transition-transform active:scale-[0.96] transition-colors ${
+                      isLight
                         ? 'bg-gray-900 text-white hover:bg-gray-800'
                         : 'bg-white/10 text-white hover:bg-white/20'
                     }`}
@@ -96,11 +99,9 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                 )}
                 <button
                   onClick={() => removeToast(toast.id)}
-                  className={`p-1 rounded transition-colors ${
-                    currentTheme === 'light' ? 'hover:bg-gray-100' : 'hover:bg-white/10'
-                  }`}
+                  className="p-1 rounded opacity-50 hover:opacity-100 transition-colors"
                 >
-                  <HiX className="w-4 h-4 opacity-50" />
+                  <HiX className="w-3.5 h-3.5" />
                 </button>
               </div>
             </motion.div>

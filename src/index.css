@@ -3,6 +3,7 @@
 :root {
   --bg-primary: #000000;
   --text-primary: #a0a0a0;
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 html, body, #root {
@@ -12,29 +13,90 @@ html, body, #root {
   padding: 0;
   background-color: var(--bg-primary);
   color: var(--text-primary);
-  overflow: hidden; /* AppShell handles scrolling */
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Heading & copy balancing */
+h1, h2, h3, h4, h5, h6 {
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
 }
 
 /* Custom Scrollbar for Webkit - Theme Aware */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 7px;
+  height: 7px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--bg-primary); 
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--scrollbar-thumb, #333); 
-  border-radius: 4px;
+  background: var(--scrollbar-thumb, #333);
+  border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--scrollbar-thumb-hover, #555); 
+  background: var(--scrollbar-thumb-hover, #555);
 }
 
 /* Firefox Scrollbar */
 * {
   scrollbar-width: thin;
-  scrollbar-color: var(--scrollbar-thumb, #333) var(--bg-primary);
+  scrollbar-color: var(--scrollbar-thumb, #333) transparent;
+}
+
+/* PDF.js Text Layer Styling for Seamless Transparent Selection */
+.textLayer {
+  position: absolute;
+  text-align: initial;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+  opacity: 1;
+  line-height: 1;
+  text-size-adjust: none;
+  forced-color-adjust: none;
+  transform-origin: 0 0;
+  z-index: 2;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.textLayer span,
+.textLayer br {
+  color: transparent;
+  position: absolute;
+  white-space: pre;
+  cursor: text;
+  transform-origin: 0% 0%;
+}
+
+.textLayer ::selection {
+  background: rgba(59, 130, 246, 0.35);
+  color: transparent;
+}
+
+/* Accessibility: Respect user motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

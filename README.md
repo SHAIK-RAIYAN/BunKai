@@ -1,135 +1,180 @@
-# BunKai Reader📚
+# BunKai 📚
+### Unified Local-First EPUB & PDF Reading Platform
 
-> A production-grade, high-performance Web EPUB Reader built for the modern web.  
-> **Currently supports EPUB files only.**
+> A high-performance, local-first reading application supporting both **EPUB** and **PDF** formats with specialized rendering engines, virtualized continuous scrolling, advanced PDF dark mode with embedded image preservation, unified auto-scroll, exact reading-position restoration, and a refined neutral monochrome interface.
 
 🌐 **Live Demo:** [https://bunkai-reader.raiyan.app/](https://bunkai-reader.raiyan.app/)
 
-*"A reader lives a thousand lives before he dies. The man who never reads lives only one."* — George R.R. Martin
+---
 
-BunKai is designed for those who believe in the power of reading—a lifelong journey of discovery, learning, and imagination. Whether you're diving into fiction, exploring non-fiction, or studying technical content, BunKai provides a distraction-free environment that lets you focus on what matters most: the words on the page.
+## 🌟 Major Capabilities & Architectural Highlights
 
-## 🚀 Core Philosophy
+### 1. Dual-Engine Architecture
+BunKai separates document rendering into independent, format-specialized engines rather than forcing them into awkward shared abstractions:
+- **EPUB Engine (`epub.js`)**: Reflowable content with dual reading modes:
+  - **Paginated Mode (Mode A)**: Column-based reading with keyboard arrow navigation, chapter jump, and page spread indication.
+  - **Continuous Vertical Mode (Mode B)**: Seamless vertical scrolling between chapters with bounded active sections.
+  - Zero-teardown theme and typography updates: font size, font family, line height, and theme apply in-place without reallocating Rendition or Book instances.
+- **PDF Engine (Mozilla `pdfjs-dist`)**: Fixed-layout documents rendered inside BunKai's native interface:
+  - Worker-based parsing isolated from the main UI thread.
+  - Page list virtualization powered by `@tanstack/react-virtual`.
+  - Bounded memory footprint: only visible pages and 1 buffer page are rendered.
+  - Rendering cancellation: in-flight `RenderTask` promises cancel immediately when pages scroll out of view.
+  - Device-pixel-ratio cap (`dpr = min(devicePixelRatio, 2)`) prevents GPU memory exhaustion on 3x/4x mobile and Retina screens.
 
-**BunKai** (分解 - "Analysis/Deconstruction") is an experiment in minimalism and performance. It strips away the clutter of traditional e-readers to focus entirely on the reading experience, specifically optimized for OLED displays.
+### 2. PDF Dark Mode & Image Preservation Pipeline
+- **Original Appearance**: Authentic authored colors.
+- **Dark Reading Appearance**: Soft, high-contrast dark palette (`#121212` background, `#e0e0e0` text) designed to eliminate eye strain during night reading.
+- **Dark Mode with Image Preservation**:
+  - Automatically inspects the PDF.js `OperatorList` (`paintImageXObject`, `paintInlineImageXObject`).
+  - Tracks the 2D affine Current Transformation Matrix (CTM) through `save`, `transform`, and `restore` state stacks.
+  - Maps bounding boxes to viewport pixel coordinates and applies targeted optical re-inversion filters (`backdrop-filter: invert(1) hue-rotate(180deg)`) over raster images.
+  - **True colors**: Embedded photographs, artwork, and diagrams display in their 100% original, rich colors while text and page whitespace remain comfortable dark grey.
+  - **Honest Scanned Document Fallback**: Automatically calculates the image-to-page area ratio. Pages where a single scan occupies >85% of the surface are detected and treated with a comfortable luminance curve rather than corrupting scanned text.
 
-Reading is a lifelong journey—a gateway to infinite worlds, knowledge, and perspectives. BunKai is crafted to honor this journey by providing a clean, distraction-free environment where you can immerse yourself in the written word. Every design decision prioritizes your reading experience, from the pitch-black Black mode that saves battery to the smooth, cinematic scrolling that makes long reading sessions effortless.
+### 3. Unified Auto-Scrolling Engine
+- Authoritative single `requestAnimationFrame` loop on native document scrolling containers.
+- Velocity-driven (`deltaY = velocity * deltaMs / 1000`): scrolls at consistent physical speed (pixels per second) regardless of display refresh rate (60Hz, 120Hz, 144Hz, 240Hz).
+- Resilient time clamping: clamps frame deltas to 100ms max to prevent leaping forward after tab suspension.
+- Instant user interruptibility: immediately pauses on mouse wheel, touch gestures, pointer down, text selection, or document end.
+- Floating HUD pill with live speed presets (Slow, Normal, Brisk, Fast) and fine-grained slider (10 to 200 px/s).
+
+### 4. Local-First Library & Exact Position Restoration
+- **Content Fingerprinting**: Instant O(1) SHA-256 fingerprinting (<10ms) samples head, mid, tail, and byte size, ensuring reliable document identity without allocating huge buffers in memory.
+- **Duplicate Detection**: Uploading or dropping an existing document immediately opens and resumes it instead of duplicating storage.
+- **Exact Position Restoration**:
+  - **EPUB**: Restores exact CFI location, chapter href, and reading percentage.
+  - **PDF**: Restores exact page number, normalized intra-page scroll ratio, and zoom level.
+- **Safe Debounced Persistence**: 300ms debounced saves during reading + immediate synchronous flushes on `pagehide` and `visibilitychange`.
+
+### 5. Design Engineering & Refinement
+Built according to Emil Kowalski, Impeccable, and modern design engineering standards:
+- **Typography & Motion**:
+  - Migrated completely to `motion/react`.
+  - Dynamic numbers powered by `@number-flow/react` with `tabular-nums` to eliminate layout shift.
+  - Contextual Lucide Animated icons with Motion hover and press micro-interactions.
+  - 150–240ms ease-out transitions (`cubic-bezier(0.23, 1, 0.32, 1)`), tactile button presses (`active:scale-[0.97]`).
+  - Concentric border radii and Beautiful Shadows layered elevation.
+
+---
 
 ## 🛠️ Tech Stack
 
-* **Core:** React 18, TypeScript, Vite
-* **Engine:** epub.js (Custom React Bindings)
-* **Styling:** Tailwind CSS v4 (CSS-first architecture)
-* **Persistence:** IndexedDB (`idb-keyval`) for book storage, LocalStorage for settings
-* **State:** Context API + Custom Hooks (`usePersistence`, `useTheme`)
-* **Icons:** react-icons
-* **Smooth Scrolling:** lenis
+- **Runtime / Framework:** React 19, TypeScript 5.9, Vite 7
+- **Document Engines:** `epubjs` 0.3, `pdfjs-dist` 6.5
+- **Virtualization:** `@tanstack/react-virtual` 3.14
+- **Animation & Numbers:** `motion` 14.10, `@number-flow/react` 0.6
+- **Styling:** Tailwind CSS 4 (CSS-first architecture), Beautiful Shadows
+- **Persistence:** Versioned IndexedDB (`bunkai_storage` v1), Web Storage Quota API
+- **Icons:** `lucide-react`, Custom Lucide Animated Motion components
 
-## ✨ Key Features
+---
 
-* **Black-Pitch Mode:** True `#000000` background for battery saving and contrast
-* **Instant Resume:** Auto-saves reading position (CFI) and sidebar state
-* **Offline First:** Books are stored locally in the browser via IndexedDB
-* **Glassmorphism UI:** Adaptive, non-intrusive interface that fades away when reading
-* **Drag & Drop:** Instant parsing of `.epub` files (EPUB format only)
-* **Real-time Customization:** Font size, font family, and theme changes apply instantly
-* **Table of Contents:** Navigate chapters with a collapsible sidebar
-* **Keyboard Navigation:** Arrow keys for chapter navigation
-* **Settings Persistence:** All preferences saved across sessions
-* **Smooth Scrolling:** Cinematic scroll experience powered by Lenis
-
-## ⚡ Performance
-
-* **Virtualization:** Efficient rendering of large chapters
-* **Zero Layout Shift:** Content layout is calculated before display
-* **Bundle Size:** Optimized via Vite for sub-second load times
-* **Lazy Loading:** Components load on demand
-
-## 📦 Installation
-
-```bash
-git clone https://github.com/SHAIK-RAIYAN/bunkai.git
-cd bunkai
-npm install
-npm run dev
-```
-
-## 🏗️ Build
-
-```bash
-npm run build
-```
-
-The build output will be in the `dist` directory, ready for deployment.
-
-## 🚢 Deployment
-
-The project includes `vercel.json` for easy deployment on Vercel. Simply connect your repository and deploy.
-
-## 📁 Project Structure
+## 📁 Project Architecture
 
 ```
 BunKai
-├─ src
-│  ├─ components
-│  │  ├─ Layout
-│  │  │  ├─ AppShell.tsx
-│  │  │  ├─ HudContext.tsx
-│  │  │  └─ SidebarContext.tsx
-│  │  ├─ Reader
-│  │  │  └─ Reader.tsx
-│  │  ├─ UI
-│  │  │  ├─ Header.tsx
-│  │  │  ├─ SettingsPanel.tsx
-│  │  │  └─ Sidebar.tsx
-│  │  └─ Views
-│  │     └─ Landing.tsx
-│  ├─ hooks
-│  │  ├─ usePersistence.ts
-│  │  └─ useTheme.ts
-│  ├─ types
-│  │  └─ index.ts
-│  └─ App.tsx
-├─ vercel.json
-└─ package.json
+├── src
+│   ├── components
+│   │   ├── Layout
+│   │   │   ├── AppShell.tsx         # Unified application shell & top header
+│   │   │   ├── SidebarContext.tsx   # TOC hierarchy & cross-format navigation
+│   │   │   └── HudContext.tsx       # Distraction-free HUD context
+│   │   ├── Reader
+│   │   │   ├── ReaderWorkspace.tsx  # Shared workspace orchestrating EPUB & PDF
+│   │   │   ├── Reader.tsx           # EPUB reader (paginated & continuous modes)
+│   │   │   ├── PdfReader.tsx        # Virtualized PDF reader with direct page jump
+│   │   │   ├── PdfPage.tsx          # Single page canvas, text layer, & image preservation
+│   │   │   └── AutoScrollHud.tsx    # Floating auto-scroll pill & speed controls
+│   │   ├── UI
+│   │   │   ├── Header.tsx           # Top navigation toolbar
+│   │   │   ├── Sidebar.tsx          # TOC drawer with recursive chapter search
+│   │   │   ├── SettingsPanel.tsx    # Appearance, typography & format settings
+│   │   │   ├── DynamicNumber.tsx    # NumberFlow tabular animated number wrapper
+│   │   │   ├── SmoothScroll.tsx     # Managed Lenis utility with safe rAF cleanup
+│   │   │   └── Icons/index.tsx      # Motion-powered Lucide Animated icons
+│   │   └── Views
+│   │       └── LibraryView.tsx      # Multi-document library, drag & drop, search
+│   ├── context
+│   │   ├── ThemeContext.tsx         # Reading preferences & global theme state
+│   │   └── ToastContext.tsx         # Notification system
+│   ├── hooks
+│   │   ├── useAutoScroll.ts         # High-precision rAF velocity scrolling hook
+│   │   └── usePersistence.ts        # IndexedDB document & reading progress repository
+│   ├── lib
+│   │   ├── db.ts                    # Versioned IndexedDB schema, migration, quota
+│   │   ├── fingerprint.ts           # SHA-256 content hasher & magic-byte format detector
+│   │   ├── epubParser.ts            # Fast metadata, cover & recursive TOC parser
+│   │   ├── pdfWorker.ts             # PDF.js worker bundler pipeline
+│   │   ├── pdfImageDetector.ts      # OperatorList CTM matrix transformation pipeline
+│   │   └── tocUtils.ts              # Recursive normalization & linear TOC search
+│   ├── types
+│   │   └── index.ts                 # Shared document, reader settings, & progress types
+│   ├── App.tsx                      # Root application router
+│   ├── index.css                    # Tailwind 4, text balancing, PDF text selection layer
+│   └── main.tsx                     # Entry point
+├── tests
+│   ├── engine.test.mjs              # TOC, PDF matrix detection, auto-scroll physics tests
+│   └── fingerprint.test.mjs         # Document fingerprinting & magic bytes tests
+├── ARCHITECTURE.md                  # Detailed architectural decision record
+├── vite.config.ts                   # Manual chunk splitting & PWA configuration
+└── package.json
 ```
 
-## 🎨 Themes
+---
 
-* **Black:** Pitch black (`#000000`) for maximum battery efficiency on OLED displays
-* **Dark:** Soft dark (`#111111`) for comfortable night reading
-* **Light:** Paper-like (`#fdfbf7`) for daytime reading
+## ⚡ Code Splitting & Performance Budget
+
+Vite is configured with chunk isolation to guarantee minimal initial payload:
+- **`index-*.js`**: ~250 kB (Application shell + document library)
+- **`epub-engine-*.js`**: ~350 kB (Lazy-loaded only when an EPUB document opens)
+- **`pdf-engine-*.js`**: ~450 kB (Lazy-loaded only when a PDF document opens)
+- **`pdf.worker.min-*.mjs`**: ~1.2 MB (Isolated web worker)
+
+Users opening an EPUB book download 0 kB of PDF.js code.
+
+---
+
+## 🚀 Development & Build Commands
+
+```bash
+# Install dependencies
+npm install
+
+# Start local development server
+npm run dev
+
+# Run unit & engine verification tests
+npm test
+
+# Run ESLint validation
+npm run lint
+
+# Compile production build
+npm run build
+
+# Preview production build locally
+npm run preview
+```
+
+---
 
 ## ⌨️ Keyboard Shortcuts
 
-* `Arrow Right` - Next chapter
-* `Arrow Left` - Previous chapter
+| Shortcut | Action |
+| --- | --- |
+| `Arrow Right` / `Page Down` | Next page (EPUB paginated mode) |
+| `Arrow Left` / `Page Up` | Previous page (EPUB paginated mode) |
+| `Alt + Down` / `Page Down` | Jump to next page (PDF mode) |
+| `Alt + Up` / `Page Up` | Jump to previous page (PDF mode) |
+| `Home` / `End` | Jump to first / last page (PDF mode) |
 
-## 🤝 Contributing
-
-Contributions are welcome! Whether you're fixing bugs, adding features, improving documentation, or suggesting ideas, your input makes BunKai better for everyone.
-
-**Ways to contribute:**
-- 🐛 Report bugs by opening an issue
-- 💡 Suggest new features or improvements
-- 🔧 Submit pull requests for bug fixes or enhancements
-- 📖 Improve documentation
-- ⭐ Star the repository if you find it useful
-
-Please feel free to reach out or submit a pull request. Together, we can build a better reading experience for everyone.
-
+---
 
 ## 👤 Author
 
 **SHAIK RAIYAN**
-
 - GitHub: [@SHAIK-RAIYAN](https://github.com/SHAIK-RAIYAN)
-- Website: [shaikraiyan.me](https://shaikraiyan.me)
 - LinkedIn: [in/shaik-raiyan](https://www.linkedin.com/in/shaik-raiyan)
 
----
-
-Built with ❤️ for readers who value simplicity, performance, and the timeless joy of reading. 
-*"The more that you read, the more things you will know. The more that you learn, the more places you'll go."* — Dr. Seuss
-
-```
+Built for readers who value performance, memory efficiency, and the distraction-free joy of reading.

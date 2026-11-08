@@ -1,5 +1,4 @@
 import { useState, type ReactNode } from 'react'
-import { HudProvider } from './HudContext'
 import { SettingsPanel } from '../UI/SettingsPanel'
 import { Header } from '../UI/Header'
 import { Sidebar } from '../UI/Sidebar'
@@ -8,42 +7,58 @@ import { useSidebar } from './SidebarContext'
 interface AppShellProps {
   children: ReactNode
   title?: string
+  format?: 'epub' | 'pdf'
   showBackButton?: boolean
-  onBackToToc?: () => void
-  onResetBook?: () => void
+  onBackToLibrary?: () => void
+  currentLocationHref?: string | null
 }
 
-export function AppShell({ children, title, showBackButton, onBackToToc, onResetBook }: AppShellProps) {
+export function AppShell({
+  children,
+  title,
+  format,
+  showBackButton,
+  onBackToLibrary,
+  currentLocationHref,
+}: AppShellProps) {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const { isOpen, toc, closeSidebar, toggleSidebar } = useSidebar()
 
   return (
     <div
-      className="fixed inset-0 overflow-hidden"
+      className="fixed inset-0 overflow-hidden flex flex-col"
       style={{ backgroundColor: 'var(--bg-primary)' }}
     >
-      {/* Header (Fixed Height: h-16 = 4rem) */}
+      {/* Header */}
       <Header
         title={title}
+        format={format}
         onToggleSidebar={toggleSidebar}
         onToggleSettings={() => setSettingsOpen(!settingsOpen)}
-        onMouseEnter={() => {}}
-        onMouseLeave={() => {}}
         showBackButton={showBackButton}
-        onBackToToc={onBackToToc}
+        onBackToLibrary={onBackToLibrary}
+        sidebarOpen={isOpen}
       />
 
-      <Sidebar toc={toc} isOpen={isOpen} onClose={closeSidebar} />
+      {/* Sidebar (Table of Contents Drawer) */}
+      <Sidebar
+        toc={toc}
+        isOpen={isOpen}
+        onClose={closeSidebar}
+        currentHref={currentLocationHref}
+      />
 
-      {/* Main Content: Anchored absolutely to ensure exact fit */}
-      <main className="absolute top-16 bottom-0 left-0 right-0">
-        <HudProvider onKeepHudOpen={() => {}}>{children}</HudProvider>
+      {/* Main Content Area */}
+      <main className="flex-1 w-full h-[calc(100vh-3.5rem)] mt-14 overflow-hidden relative">
+        {children}
       </main>
 
+      {/* Settings Modal */}
       <SettingsPanel
         isOpen={settingsOpen}
         onClose={() => setSettingsOpen(false)}
-        onResetBook={onResetBook}
+        onReturnToLibrary={onBackToLibrary}
+        format={format}
       />
     </div>
   )
