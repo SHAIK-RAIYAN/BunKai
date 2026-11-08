@@ -1,11 +1,12 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
-import type { DocumentMetadata } from '../../types'
+import type { DocumentMetadata, ReadingProgress } from '../../types'
 import { usePersistence } from '../../hooks/usePersistence'
 import { useToast } from '../../context/ToastContext'
 import { useTheme } from '../../context/ThemeContext'
 import { DynamicNumber } from '../UI/DynamicNumber'
 import { AnimatedUploadIcon, AnimatedSearchIcon, AnimatedBookIcon } from '../UI/Icons'
+import { Confetti } from '../UI/Confetti'
 import { generatePdfThumbnail } from '../../lib/pdfThumbnail'
 import { updateDocumentMetadata } from '../../lib/db'
 
@@ -16,15 +17,23 @@ interface LibraryViewProps {
 
 export function LibraryView({ onOpenDocument, onDocumentImported }: LibraryViewProps) {
   const [documents, setDocuments] = useState<DocumentMetadata[]>([])
-  const [progressMap, setProgressMap] = useState<Record<string, number>>({})
+  const [progressMap, setProgressMap] = useState<Record<string, ReadingProgress>>({})
   const [thumbnails, setThumbnails] = useState<Record<string, string>>({})
   const [filterFormat, setFilterFormat] = useState<'all' | 'epub' | 'pdf'>('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [isDragging, setIsDragging] = useState(false)
   const [isImporting, setIsImporting] = useState(false)
+  const [celebratingDocId, setCelebratingDocId] = useState<string | null>(null)
 
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const { loadAllDocuments, loadDocument, importDocument, deleteDocument, getReadingProgress } = usePersistence()
+  const {
+    loadAllDocuments,
+    loadDocument,
+    importDocument,
+    deleteDocument,
+    getReadingProgress,
+    saveReadingProgressImmediate,
+  } = usePersistence()
   const { addToast } = useToast()
   const { currentTheme } = useTheme()
   const isLight = currentTheme === 'light'
@@ -35,8 +44,9 @@ export function LibraryView({ onOpenDocument, onDocumentImported }: LibraryViewP
       const docs = await loadAllDocuments()
       setDocuments(docs)
 
-      const pMap: Record<string, number> = {}
+      const pMap: Record<string, ReadingProgress> = {}
       const tMap: Record<string, string> = {}
+      let pendingCelebrationId: string | null = null
 
       for (const d of docs) {
         if (d.coverUrl) {
@@ -44,11 +54,25 @@ export function LibraryView({ onOpenDocument, onDocumentImported }: LibraryViewP
         }
         const prog = await getReadingProgress(d.id)
         if (prog) {
-          pMap[d.id] = prog.percentage || 0
+          pMap[d.id] = prog
+          if (prog.celebrationState === 'pending' && !pendingCelebrationId) {
+            pendingCelebrationId = d.id
+          }
         }
       }
       setProgressMap(pMap)
       setThumbnails((prev) => ({ ...prev, ...tMap }))
+
+      // If a book was recently completed, trigger celebration confetti once and mark consumed
+      if (pendingCelebrationId) {
+        setCelebratingDocId(pendingCelebrationId)
+        const progToConsume = pMap[pendingCelebrationId]
+        if (progToConsume) {
+          const updated: ReadingProgress = { ...progToConsume, celebrationState: 'consumed' }
+          saveReadingProgressImmediate(updated)
+          pMap[pendingCelebrationId] = updated
+        }
+      }
 
       // Generate PDF thumbnails lazily in the background for docs without covers
       for (const d of docs) {
@@ -68,7 +92,7 @@ export function LibraryView({ onOpenDocument, onDocumentImported }: LibraryViewP
     } catch (err) {
       console.error('Error loading library documents:', err)
     }
-  }, [loadAllDocuments, getReadingProgress, loadDocument])
+  }, [loadAllDocuments, getReadingProgress, loadDocument, saveReadingProgressImmediate])
 
   useEffect(() => {
     refreshLibrary()
@@ -157,6 +181,16 @@ export function LibraryView({ onOpenDocument, onDocumentImported }: LibraryViewP
     const days = Math.floor(hours / 24)
     if (days === 1) return 'Yesterday'
     return `${days}d ago`
+  }
+
+  const formatReadingTime = (seconds: number | undefined): string => {
+    if (!seconds || seconds < 60) return '< 1m read'
+    const mins = Math.floor(seconds / 60)
+    if (mins < 60) return `${mins}m read`
+    const hours = Math.floor(mins / 60)
+    const remainingMins = mins % 60
+    if (remainingMins === 0) return `${hours}h read`
+    return `${hours}h ${remainingMins}m read`
   }
 
   return (
@@ -270,8 +304,12 @@ export function LibraryView({ onOpenDocument, onDocumentImported }: LibraryViewP
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {filteredDocuments.map((doc) => {
-              const progressPct = Math.round((progressMap[doc.id] || 0) * 100)
+              const prog = progressMap[doc.id]
+              const isCompleted = Boolean(prog?.completed || (prog?.percentage || 0) >= 0.99)
+              const progressPct = isCompleted ? 100 : Math.round((prog?.percentage || 0) * 100)
+              const readingTime = formatReadingTime(prog?.activeReadingSeconds)
               const cover = thumbnails[doc.id]
+              const isCelebrating = celebratingDocId === doc.id
 
               return (
                 <motion.div
@@ -280,24 +318,37 @@ export function LibraryView({ onOpenDocument, onDocumentImported }: LibraryViewP
                   whileHover={{ y: -2 }}
                   whileTap={{ scale: 0.98 }}
                   transition={{ duration: 0.16, ease: [0.23, 1, 0.32, 1] }}
-                  className={`p-5 rounded-2xl border cursor-pointer relative group flex flex-col justify-between transition-colors shadow-[0px_2px_3px_-1px_rgba(0,0,0,0.06),0px_1px_0px_0px_rgba(25,28,33,0.02),0px_0px_0px_1px_rgba(25,28,33,0.04)] ${
+                  className={`p-5 rounded-2xl border cursor-pointer relative group flex flex-col justify-between transition-colors overflow-hidden shadow-[0px_2px_3px_-1px_rgba(0,0,0,0.06),0px_1px_0px_0px_rgba(25,28,33,0.02),0px_0px_0px_1px_rgba(25,28,33,0.04)] ${
                     isLight
                       ? 'bg-white border-gray-200/90 hover:border-gray-300'
                       : 'bg-zinc-900/60 border-white/10 hover:border-white/20'
                   }`}
                 >
+                  {/* Subtle Confetti Overlay for newly completed book */}
+                  {isCelebrating && (
+                    <Confetti onComplete={() => setCelebratingDocId(null)} />
+                  )}
+
                   <div>
-                    {/* Top row: Format Badge & Delete button */}
+                    {/* Top row: Format & Completion Badges + Delete button */}
                     <div className="flex items-center justify-between mb-4">
-                      <span
-                        className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold tracking-wider uppercase ${
-                          doc.format === 'pdf'
-                            ? 'bg-rose-500/10 text-rose-500 border border-rose-500/20'
-                            : 'bg-blue-500/10 text-blue-500 border border-blue-500/20'
-                        }`}
-                      >
-                        {doc.format}
-                      </span>
+                      <div className="flex items-center gap-1.5">
+                        <span
+                          className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold tracking-wider uppercase ${
+                            doc.format === 'pdf'
+                              ? 'bg-rose-500/10 text-rose-500 border border-rose-500/20'
+                              : 'bg-blue-500/10 text-blue-500 border border-blue-500/20'
+                          }`}
+                        >
+                          {doc.format}
+                        </span>
+
+                        {isCompleted && (
+                          <span className="px-2 py-0.5 rounded text-[10px] font-medium tracking-wide bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                            Completed
+                          </span>
+                        )}
+                      </div>
 
                       <button
                         onClick={(e) => handleDelete(e, doc.id, doc.title)}
@@ -344,17 +395,25 @@ export function LibraryView({ onOpenDocument, onDocumentImported }: LibraryViewP
                   {/* Progress & File Metadata Footer */}
                   <div className="mt-2 pt-3 border-t border-black/5 dark:border-white/5 flex flex-col gap-1.5">
                     <div className="flex items-center justify-between text-[11px] opacity-60 font-mono tabular-nums">
-                      <span>{formatTimeAgo(doc.lastOpenedAt)}</span>
+                      <div className="flex items-center gap-1.5 truncate">
+                        <span>{formatTimeAgo(doc.lastOpenedAt)}</span>
+                        <span>•</span>
+                        <span>{readingTime}</span>
+                      </div>
                       <span>
                         <DynamicNumber value={progressPct} suffix="%" />
                       </span>
                     </div>
 
-                    {/* Progress Bar */}
+                    {/* Progress Bar (Green when completed) */}
                     <div className="w-full h-1 bg-black/10 dark:bg-white/10 rounded-full overflow-hidden">
                       <div
                         className={`h-full rounded-full transition-all duration-300 ${
-                          doc.format === 'pdf' ? 'bg-rose-500' : 'bg-blue-500'
+                          isCompleted
+                            ? 'bg-emerald-500'
+                            : doc.format === 'pdf'
+                              ? 'bg-rose-500'
+                              : 'bg-blue-500'
                         }`}
                         style={{ width: `${Math.max(3, progressPct)}%` }}
                       />

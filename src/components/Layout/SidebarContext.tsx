@@ -15,6 +15,8 @@ interface SidebarContextType {
   setToc: (toc: TocItem[]) => void
   registerNavigation: (fn: (href: string) => void) => void
   navigate: (href: string) => void
+  currentHref: string | null
+  setCurrentHref: (href: string | null) => void
 }
 
 const SidebarContext = createContext<SidebarContextType | null>(null)
@@ -30,6 +32,7 @@ export function useSidebar() {
 export function SidebarProvider({ children }: { children: ReactNode }) {
   const [isOpen, setIsOpen] = useState(false)
   const [toc, setToc] = useState<TocItem[]>([])
+  const [currentHref, setCurrentHref] = useState<string | null>(null)
   const navigationFnRef = useRef<((href: string) => void) | null>(null)
 
   const toggleSidebar = () => setIsOpen((prev) => !prev)
@@ -42,6 +45,7 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
   const navigate = (href: string) => {
     if (navigationFnRef.current) {
       navigationFnRef.current(href)
+      setCurrentHref(href)
       closeSidebar() // Auto-close on nav
     } else {
       console.warn('Navigation function not registered')
@@ -58,6 +62,8 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
         setToc,
         registerNavigation,
         navigate,
+        currentHref,
+        setCurrentHref,
       }}
     >
       {children}

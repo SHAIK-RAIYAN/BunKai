@@ -31,6 +31,8 @@ export interface DocumentMetadata {
   lastOpenedAt: number
 }
 
+export type CelebrationState = 'not_completed' | 'pending' | 'consumed'
+
 export interface ReadingProgress {
   documentId: string
   format: DocumentFormat
@@ -40,6 +42,9 @@ export interface ReadingProgress {
   pdfPage?: number
   pdfScrollOffsetRatio?: number
   pdfZoom?: number
+  activeReadingSeconds?: number
+  completed?: boolean
+  celebrationState?: CelebrationState
   lastUpdated: number
 }
 

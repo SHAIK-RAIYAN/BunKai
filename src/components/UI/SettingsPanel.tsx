@@ -8,6 +8,8 @@ interface SettingsPanelProps {
   onClose: () => void
   onReturnToLibrary?: () => void
   format?: 'epub' | 'pdf'
+  isImmersive?: boolean
+  onToggleImmersive?: () => void
 }
 
 const FONT_FAMILIES = ['Helvetica', 'Georgia', 'Merriweather', 'Charter', 'Inter']
@@ -17,6 +19,8 @@ export function SettingsPanel({
   onClose,
   onReturnToLibrary,
   format = 'epub',
+  isImmersive = false,
+  onToggleImmersive,
 }: SettingsPanelProps) {
   const {
     currentTheme,
@@ -79,6 +83,33 @@ export function SettingsPanel({
                   <AnimatedCloseIcon size={16} />
                 </button>
               </div>
+
+              {/* Immersive Reading Mode Toggle */}
+              {onToggleImmersive && (
+                <div className="mb-6 pb-5 border-b border-white/10 dark:border-white/10">
+                  <button
+                    onClick={() => {
+                      onToggleImmersive()
+                      onClose()
+                    }}
+                    className={`w-full py-2.5 px-3 rounded-xl text-xs font-medium flex items-center justify-between border transition-all active:scale-[0.98] ${
+                      isImmersive
+                        ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-500 dark:text-emerald-400'
+                        : isLight
+                          ? 'bg-gray-100 hover:bg-gray-200 border-gray-200 text-gray-900'
+                          : 'bg-white/5 hover:bg-white/10 border-white/10 text-white'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                      </svg>
+                      <span>{isImmersive ? 'Exit Immersive Mode' : 'Immersive Reading Mode'}</span>
+                    </div>
+                    <span className="text-[10px] font-mono opacity-60">Esc</span>
+                  </button>
+                </div>
+              )}
 
               {/* Theme Selection */}
               <div className="mb-6">

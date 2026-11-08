@@ -7,6 +7,7 @@ interface HeaderProps {
   format?: 'epub' | 'pdf'
   onToggleSidebar: () => void
   onToggleSettings: () => void
+  onToggleImmersive?: () => void
   showBackButton?: boolean
   onBackToLibrary?: () => void
   sidebarOpen?: boolean
@@ -17,6 +18,7 @@ export function Header({
   format,
   onToggleSidebar,
   onToggleSettings,
+  onToggleImmersive,
   showBackButton,
   onBackToLibrary,
   sidebarOpen = false,
@@ -87,8 +89,32 @@ export function Header({
         )}
       </div>
 
-      {/* Right: Settings Toggle */}
+      {/* Right: Immersive Mode & Settings Toggle */}
       <div className="flex items-center gap-1">
+        {showBackButton && onToggleImmersive && (
+          <button
+            onClick={onToggleImmersive}
+            className="p-2 rounded-lg opacity-80 hover:opacity-100 hover:bg-black/5 dark:hover:bg-white/10 transition-transform active:scale-[0.96] transition-colors"
+            aria-label="Enter distraction-free reading mode"
+            title="Immersive Reading Mode"
+          >
+            {/* Expand / Maximize Icon */}
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              strokeWidth="2"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
+              />
+            </svg>
+          </button>
+        )}
+
         <button
           onClick={onToggleSettings}
           className="p-2 rounded-lg opacity-80 hover:opacity-100 hover:bg-black/5 dark:hover:bg-white/10 transition-transform active:scale-[0.96] transition-colors"

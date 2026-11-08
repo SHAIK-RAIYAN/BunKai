@@ -17,7 +17,7 @@ function AppContent() {
   const [initialProgress, setInitialProgress] = useState<ReadingProgress | null>(null)
 
   const { loadDocument, getReadingProgress, loadAllDocuments } = usePersistence()
-  const { setToc } = useSidebar()
+  const { setToc, currentHref } = useSidebar()
   const { addToast } = useToast()
 
   // On mount, initialize storage & legacy migrations
@@ -85,7 +85,7 @@ function AppContent() {
       format={activeDocument?.metadata.format}
       showBackButton={currentView === 'reader'}
       onBackToLibrary={handleBackToLibrary}
-      currentLocationHref={initialProgress?.epubCfi || initialProgress?.epubHref}
+      currentLocationHref={currentHref || initialProgress?.epubCfi || initialProgress?.epubHref}
     >
       <AnimatePresence mode="wait">
         {currentView === 'library' ? (

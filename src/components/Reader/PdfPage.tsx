@@ -13,6 +13,21 @@ interface PdfPageProps {
   onDimensionsMeasured?: (pageNumber: number, width: number, height: number) => void
 }
 
+function isCancellationError(err: unknown): boolean {
+  if (!err || typeof err !== 'object') return false
+  const errorObj = err as Record<string, unknown>
+  const name = String(errorObj.name || '')
+  const message = String(errorObj.message || '')
+
+  return (
+    name === 'RenderingCancelledException' ||
+    name === 'AbortException' ||
+    name === 'AbortError' ||
+    message.toLowerCase().includes('cancelled') ||
+    message.toLowerCase().includes('aborted')
+  )
+}
+
 export function PdfPage({
   pageNumber,
   pdfDoc,
@@ -33,30 +48,32 @@ export function PdfPage({
   const renderTaskRef = useRef<RenderTask | null>(null)
   const textLayerTaskRef = useRef<any>(null)
   const isMountedRef = useRef(true)
+  const generationRef = useRef(0)
 
   useEffect(() => {
     isMountedRef.current = true
+    const currentGen = ++generationRef.current
 
     const renderPage = async () => {
+      // 1. Cancel previous in-flight tasks cleanly before starting new generation
+      if (renderTaskRef.current) {
+        try {
+          renderTaskRef.current.cancel()
+        } catch {}
+        renderTaskRef.current = null
+      }
+      if (textLayerTaskRef.current) {
+        try {
+          textLayerTaskRef.current.cancel()
+        } catch {}
+        textLayerTaskRef.current = null
+      }
+
+      setRenderError(null)
+
       try {
-        if (renderTaskRef.current) {
-          try {
-            renderTaskRef.current.cancel()
-          } catch {}
-          renderTaskRef.current = null
-        }
-        if (textLayerTaskRef.current) {
-          try {
-            textLayerTaskRef.current.cancel()
-          } catch {}
-          textLayerTaskRef.current = null
-        }
-
-        setIsRendered(false)
-        setRenderError(null)
-
         const page = await pdfDoc.getPage(pageNumber)
-        if (!isMountedRef.current) return
+        if (!isMountedRef.current || currentGen !== generationRef.current) return
 
         const viewport = page.getViewport({ scale })
 
@@ -66,7 +83,7 @@ export function PdfPage({
         }
 
         const canvas = canvasRef.current
-        if (!canvas || !isMountedRef.current) return
+        if (!canvas || !isMountedRef.current || currentGen !== generationRef.current) return
 
         const dpr = Math.min(window.devicePixelRatio || 1, 2)
         canvas.width = Math.floor(viewport.width * dpr)
@@ -90,28 +107,38 @@ export function PdfPage({
         const renderTask = page.render(renderContext)
         renderTaskRef.current = renderTask
 
+        // Extract images for dark-mode color restoration
         if (appearanceMode === 'dark' && imageTreatment === 'preserve') {
-          page.getOperatorList().then((opList) => {
-            if (!isMountedRef.current) return
-            const rects = extractImageRectangles(
-              opList,
-              viewport.transform,
-              viewport.width,
-              viewport.height,
-              pdfjsLib.OPS,
-            )
-            setImageRects(rects)
-          }).catch((err) => {
-            console.warn(`OperatorList extraction failed for page ${pageNumber}:`, err)
-          })
+          page
+            .getOperatorList()
+            .then((opList) => {
+              if (!isMountedRef.current || currentGen !== generationRef.current) return
+              const rects = extractImageRectangles(
+                opList,
+                viewport.transform,
+                viewport.width,
+                viewport.height,
+                pdfjsLib.OPS,
+              )
+              setImageRects(rects)
+            })
+            .catch((err) => {
+              if (!isCancellationError(err)) {
+                console.warn(`OperatorList extraction notice on page ${pageNumber}:`, err)
+              }
+            })
         } else {
           setImageRects([])
         }
 
+        // Wait for canvas to finish rendering
         await renderTask.promise
-        if (!isMountedRef.current) return
-        setIsRendered(true)
+        if (!isMountedRef.current || currentGen !== generationRef.current) return
 
+        setIsRendered(true)
+        setRenderError(null)
+
+        // Render transparent text selection layer in separate try/catch
         if (textLayerRef.current) {
           textLayerRef.current.innerHTML = ''
           textLayerRef.current.style.width = `${Math.floor(viewport.width)}px`
@@ -119,7 +146,7 @@ export function PdfPage({
 
           try {
             const textContentSource = await page.getTextContent()
-            if (!isMountedRef.current) return
+            if (!isMountedRef.current || currentGen !== generationRef.current) return
 
             const textLayer = new pdfjsLib.TextLayer({
               textContentSource,
@@ -128,16 +155,20 @@ export function PdfPage({
             })
             textLayerTaskRef.current = textLayer
             await textLayer.render()
-          } catch (textErr: any) {
-            if (textErr?.name !== 'RenderingCancelledException') {
-              console.warn(`TextLayer error on page ${pageNumber}:`, textErr)
+          } catch (textErr: unknown) {
+            if (!isCancellationError(textErr)) {
+              console.warn(`TextLayer degraded on page ${pageNumber}:`, textErr)
             }
           }
         }
-      } catch (err: any) {
-        if (err?.name === 'RenderingCancelledException') return
-        console.error(`Error rendering PDF page ${pageNumber}:`, err)
-        if (isMountedRef.current) {
+      } catch (err: unknown) {
+        if (isCancellationError(err)) {
+          // Gracefully ignore cancellation when scrolling or switching scale
+          return
+        }
+
+        if (isMountedRef.current && currentGen === generationRef.current) {
+          console.error(`Genuine error rendering PDF page ${pageNumber}:`, err)
           setRenderError(`Could not render page ${pageNumber}`)
         }
       }

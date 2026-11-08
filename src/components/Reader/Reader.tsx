@@ -20,6 +20,62 @@ interface ReaderProps {
   scrollContainerRef?: React.RefObject<HTMLDivElement | null>
 }
 
+function getThemeCss(themeName: string, lh: number, isContinuous: boolean) {
+  const isOled = themeName === 'oled'
+  const isLight = themeName === 'light'
+
+  const bg = isOled ? '#000000' : isLight ? '#fdfbf7' : '#111111'
+  const text = isOled ? '#a0a0a0' : isLight ? '#1a1a1a' : '#cccccc'
+  const link = isOled ? '#ffffff' : isLight ? '#000000' : '#ffffff'
+
+  return `
+    html, body {
+      background-color: ${bg} !important;
+      color: ${text} !important;
+      line-height: ${lh} !important;
+      margin: 0 !important;
+      padding: ${isContinuous ? '2rem 1.5rem 6rem' : '0 1rem'} !important;
+      box-sizing: border-box !important;
+    }
+    body {
+      max-width: ${isContinuous ? '1020px' : '100%'} !important;
+      margin-left: auto !important;
+      margin-right: auto !important;
+    }
+    p, div, span, li, blockquote {
+      color: ${text} !important;
+    }
+    a {
+      color: ${link} !important;
+      text-decoration: none !important;
+    }
+    a:hover {
+      text-decoration: underline !important;
+    }
+    img {
+      max-width: 100% !important;
+      height: auto !important;
+    }
+  `
+}
+
+function applyThemeToDoc(doc: Document, themeName: string, lh: number, isContinuous: boolean) {
+  if (!doc) return
+  let styleEl = doc.getElementById('bunkai-active-theme') as HTMLStyleElement | null
+  if (!styleEl) {
+    styleEl = doc.createElement('style')
+    styleEl.id = 'bunkai-active-theme'
+    doc.head.appendChild(styleEl)
+  }
+  styleEl.textContent = getThemeCss(themeName, lh, isContinuous)
+
+  // Remove any conflicting epubjs theme styles that might linger
+  ;['oled', 'dark', 'light'].forEach((t) => {
+    const stale = doc.getElementById(`epubjs-inserted-css-${t}`)
+    if (stale) stale.remove()
+  })
+}
+
 export function Reader({
   data,
   documentId,
@@ -44,52 +100,30 @@ export function Reader({
   const isNavigatingRef = useRef(false)
   const lastLocationRef = useRef<string | null>(initialLocation || null)
 
-  const { toc } = useSidebar()
+  const { toc, registerNavigation, setCurrentHref } = useSidebar()
   const { currentTheme, fontSize, fontFamily, lineHeight, epubReadingMode: contextReadingMode } = useTheme()
   const activeReadingMode = propReadingMode || contextReadingMode || 'paginated'
 
   const flattenedToc = toc.length > 0 ? flattenToc(toc) : []
   const currentIndex = lastLocationRef.current ? findChapterIndex(flattenedToc, lastLocationRef.current) : -1
 
-  const applyThemesToRendition = useCallback((r: Rendition, themeName: string, lh: number) => {
-    const themes = {
-      oled: {
-        body: {
-          background: '#000000 !important',
-          color: '#a0a0a0 !important',
-          'line-height': `${lh} !important`,
-          padding: '0 1rem !important',
-        },
-        p: { color: '#a0a0a0 !important' },
-        a: { color: '#ffffff !important', 'text-decoration': 'none !important' },
-      },
-      dark: {
-        body: {
-          background: '#111111 !important',
-          color: '#cccccc !important',
-          'line-height': `${lh} !important`,
-          padding: '0 1rem !important',
-        },
-        p: { color: '#cccccc !important' },
-        a: { color: '#ffffff !important', 'text-decoration': 'none !important' },
-      },
-      light: {
-        body: {
-          background: '#fdfbf7 !important',
-          color: '#1a1a1a !important',
-          'line-height': `${lh} !important`,
-          padding: '0 1rem !important',
-        },
-        p: { color: '#1a1a1a !important' },
-        a: { color: '#000000 !important', 'text-decoration': 'none !important' },
-      },
-    }
+  const currentThemeRef = useRef(currentTheme)
+  const lineHeightRef = useRef(lineHeight)
+  currentThemeRef.current = currentTheme
+  lineHeightRef.current = lineHeight
 
-    r.themes.register('oled', themes.oled)
-    r.themes.register('dark', themes.dark)
-    r.themes.register('light', themes.light)
-    r.themes.select(themeName)
-  }, [])
+  // Helper to push theme updates to all active rendition iframe documents
+  const updateAllRenditionThemes = useCallback((themeName: string, lh: number) => {
+    if (!renditionRef.current) return
+    const isContinuous = activeReadingMode === 'continuous'
+    const rawContents: any = renditionRef.current.getContents()
+    const contentsList = Array.isArray(rawContents) ? rawContents : rawContents ? [rawContents] : []
+    contentsList.forEach((content: any) => {
+      if (content?.document) {
+        applyThemeToDoc(content.document, themeName, lh, isContinuous)
+      }
+    })
+  }, [activeReadingMode])
 
   // 1. Primary Engine Initialization
   useEffect(() => {
@@ -127,6 +161,14 @@ export function Reader({
         await book.ready
         if (!active || !viewerRef.current) return
 
+        // Background location generation for byte-accurate percentage progress
+        book.locations.generate(1024).then(() => {
+          if (!active) return
+          // Locations cached in book.locations
+        }).catch((err) => {
+          console.warn('Locations generation skipped or failed:', err)
+        })
+
         const isContinuous = activeReadingMode === 'continuous'
 
         const renditionInstance = book.renderTo(viewerRef.current, {
@@ -140,27 +182,40 @@ export function Reader({
 
         renditionRef.current = renditionInstance
 
+        // Content Hook: Immediately inject styling and theme on each chapter/view
         renditionInstance.hooks.content.register((content: any) => {
-          const style = content.document.createElement('style')
-          style.textContent = `
-            a:hover { text-decoration: underline !important; }
-            img { max-width: 100% !important; height: auto !important; }
-          `
-          content.document.head.appendChild(style)
+          if (content?.document) {
+            applyThemeToDoc(content.document, currentThemeRef.current, lineHeightRef.current, isContinuous)
+          }
         })
 
-        applyThemesToRendition(renditionInstance, currentTheme, lineHeight)
         renditionInstance.themes.fontSize(`${fontSize}%`)
         renditionInstance.themes.font(fontFamily)
 
+        // Relocated Listener: update location text, percentage and chapter
         renditionInstance.on('relocated', (location: any) => {
           if (!active) return
           if (location?.start) {
             const startCfi = location.start.cfi
-            const percentage = location.start.percentage || 0
             const href = location.start.href
 
             lastLocationRef.current = startCfi
+            if (href) setCurrentHref(href)
+
+            // Calculate progress accurately
+            let percentage = location.start.percentage || 0
+            if ((!percentage || percentage === 0) && book.locations?.length()) {
+              percentage = book.locations.percentageFromCfi(startCfi) || 0
+            }
+            if ((!percentage || percentage === 0) && book.spine) {
+              const spineItems = (book.spine as any).items || []
+              const total = spineItems.length
+              const currentSpineIndex = location.start.index ?? findChapterIndex(flattenedToc, href)
+              if (total > 0 && currentSpineIndex >= 0) {
+                percentage = (currentSpineIndex + 0.5) / total
+              }
+            }
+            percentage = Math.max(0, Math.min(1, Number(percentage.toFixed(4))))
 
             if (location.start.displayed?.page && location.start.displayed?.total) {
               setPageLocationText(`${location.start.displayed.page} / ${location.start.displayed.total}`)
@@ -191,6 +246,15 @@ export function Reader({
         if (active) {
           setRendition(renditionInstance)
           setIsRenderReady(true)
+
+          // Hook external scroll container to continuous manager container if available
+          if (isContinuous && externalScrollRef) {
+            const manager = (renditionInstance as any).manager
+            const actualScroller = manager?.container || viewerRef.current
+            if (actualScroller) {
+              ;(externalScrollRef as any).current = actualScroller
+            }
+          }
         }
       } catch (err) {
         console.error('Failed to initialize EPUB engine:', err)
@@ -219,33 +283,63 @@ export function Reader({
     }
   }, [data, documentId, activeReadingMode])
 
-  // 2. Navigate to chapter/location when initialLocation changes externally without reinitializing
+  // 2. Register Sidebar Table of Contents Navigation
   useEffect(() => {
-    if (!rendition || !initialLocation) return
-    if (initialLocation === lastLocationRef.current) return
+    if (!rendition) return
 
-    const navigate = async () => {
-      if (isNavigatingRef.current) return
-      isNavigatingRef.current = true
+    const handleEpubNavigation = async (targetHref: string) => {
+      if (!bookRef.current || !renditionRef.current || isNavigatingRef.current) return
       try {
-        lastLocationRef.current = initialLocation
-        await rendition.display(initialLocation)
-        applyThemesToRendition(rendition, currentTheme, lineHeight)
+        isNavigatingRef.current = true
+        const book = bookRef.current
+
+        // Normalize target HREF and extract fragment anchor if present
+        const [cleanHref, anchor] = targetHref.split('#')
+        let targetToDisplay = targetHref
+
+        // Verify if target exists directly in spine
+        const directSection = book.spine.get(cleanHref)
+        if (!directSection) {
+          const allItems = (book.spine as any).items || []
+          const matchedItem = allItems.find(
+            (item: any) =>
+              item.href === cleanHref ||
+              item.href.endsWith(cleanHref) ||
+              cleanHref.endsWith(item.href) ||
+              encodeURI(item.href) === encodeURI(cleanHref),
+          )
+
+          if (matchedItem) {
+            targetToDisplay = anchor ? `${matchedItem.href}#${anchor}` : matchedItem.href
+          }
+        }
+
+        lastLocationRef.current = targetToDisplay
+        await renditionRef.current.display(targetToDisplay)
+        setCurrentHref(targetHref)
+        updateAllRenditionThemes(currentThemeRef.current, lineHeightRef.current)
       } catch (err) {
-        console.warn('Navigation to location failed:', err)
+        console.warn('EPUB TOC navigation failed for target:', targetHref, err)
+        try {
+          await renditionRef.current?.display(targetHref)
+          setCurrentHref(targetHref)
+        } catch (fallbackErr) {
+          console.error('EPUB fallback navigation failed:', fallbackErr)
+        }
       } finally {
         isNavigatingRef.current = false
       }
     }
 
-    navigate()
-  }, [initialLocation, rendition, currentTheme, lineHeight, applyThemesToRendition])
+    registerNavigation(handleEpubNavigation)
+    return () => registerNavigation(() => {})
+  }, [rendition, registerNavigation, setCurrentHref, updateAllRenditionThemes])
 
-  // 3. Dynamic Setting Updates: Theme changes in-place without destroying engine
+  // 3. Dynamic Setting Updates: Theme changes in-place deterministically
   useEffect(() => {
     if (!rendition) return
-    applyThemesToRendition(rendition, currentTheme, lineHeight)
-  }, [rendition, currentTheme, lineHeight, applyThemesToRendition])
+    updateAllRenditionThemes(currentTheme, lineHeight)
+  }, [rendition, currentTheme, lineHeight, updateAllRenditionThemes])
 
   // 4. Dynamic Setting Updates: Font Size
   useEffect(() => {
@@ -339,15 +433,15 @@ export function Reader({
       <div
         ref={containerRef}
         className="flex-1 w-full h-full overflow-y-auto overflow-x-hidden relative"
-        style={{ scrollBehavior: 'smooth' }}
+        style={{ scrollBehavior: 'auto' }}
       >
         <div
           ref={viewerRef}
-          className="w-full h-full max-w-4xl mx-auto min-h-[70vh]"
-          style={{
-            maxWidth: activeReadingMode === 'continuous' ? '780px' : '100%',
-            padding: activeReadingMode === 'continuous' ? '2rem 1.5rem 6rem' : '0',
-          }}
+          className={`h-full mx-auto min-h-[70vh] transition-all duration-200 ${
+            activeReadingMode === 'continuous'
+              ? 'w-[92%] md:w-[88%] max-w-[1400px]'
+              : 'w-full max-w-4xl'
+          }`}
         />
       </div>
 

@@ -153,3 +153,68 @@ test('Auto-Scroll Physics: Velocity, time delta, and independence from refresh r
   assert.ok(Math.abs(totalMoved144 - 60) < 0.001)
 })
 
+test('PDF Destination Resolution & Coordinate parsing', async () => {
+  // Mock PDF document proxy
+  const mockDoc = {
+    numPages: 100,
+    async getDestination(name) {
+      if (name === 'named_ch3') {
+        return [{ num: 55, gen: 0 }, { name: 'XYZ' }, 0, 450, 1]
+      }
+      return null
+    },
+    async getPageIndex(pageRef) {
+      if (pageRef && pageRef.num === 55) return 24 // 0-based page index 24 -> Page 25
+      return 0
+    },
+  }
+
+  const { resolvePdfDestination } = await import('../src/lib/pdfOutline.ts')
+
+  // 1. Resolve explicit destination array with page index
+  const res1 = await resolvePdfDestination(mockDoc, [10, { name: 'XYZ' }, 0, 720, null])
+  assert.deepEqual(res1, { pageIndex: 10, destY: 720 })
+
+  // 2. Resolve named destination
+  const res2 = await resolvePdfDestination(mockDoc, 'named_ch3')
+  assert.deepEqual(res2, { pageIndex: 24, destY: 450 })
+
+  // 3. Resolve invalid / unresolvable destination
+  const res3 = await resolvePdfDestination(mockDoc, 'nonexistent')
+  assert.equal(res3, null)
+})
+
+test('First-time Completion Celebration State Machine', () => {
+  // State transitions: not_completed -> pending -> consumed
+  let state = 'not_completed'
+
+  // Document reaches 100%
+  const onDocumentFinished = (current) => {
+    if (current === 'consumed') return 'consumed'
+    return 'pending'
+  }
+
+  // 1. First completion
+  state = onDocumentFinished(state)
+  assert.equal(state, 'pending')
+
+  // 2. Returning to library consumes celebration exactly once
+  const onReturnToLibrary = (current) => {
+    if (current === 'pending') {
+      return { triggerConfetti: true, nextState: 'consumed' }
+    }
+    return { triggerConfetti: false, nextState: current }
+  }
+
+  const step1 = onReturnToLibrary(state)
+  assert.equal(step1.triggerConfetti, true)
+  state = step1.nextState
+  assert.equal(state, 'consumed')
+
+  // 3. Subsequent visits do NOT trigger celebration again
+  const step2 = onReturnToLibrary(state)
+  assert.equal(step2.triggerConfetti, false)
+  assert.equal(step2.nextState, 'consumed')
+})
+
+

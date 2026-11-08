@@ -3,9 +3,10 @@ import { motion } from 'motion/react'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import type { PDFDocumentProxy } from 'pdfjs-dist'
 import { pdfjsLib } from '../../lib/pdfWorker'
+import { extractPdfToc } from '../../lib/pdfOutline'
 import { PdfPage } from './PdfPage'
 import { useTheme } from '../../context/ThemeContext'
-import { useSidebar, type TocItem } from '../Layout/SidebarContext'
+import { useSidebar } from '../Layout/SidebarContext'
 import type { PdfAppearanceMode, PdfImageTreatment } from '../../types'
 
 interface PdfReaderProps {
@@ -46,7 +47,7 @@ export function PdfReader({
   })
 
   const isRestoredRef = useRef(false)
-  const { setToc: setSidebarToc } = useSidebar()
+  const { setToc: setSidebarToc, registerNavigation, setCurrentHref } = useSidebar()
   const {
     currentTheme,
     pdfAppearanceMode: contextAppearance,
@@ -112,20 +113,12 @@ export function PdfReader({
         }
 
         try {
-          const outline = await doc.getOutline()
-          if (outline && Array.isArray(outline) && outline.length > 0) {
-            const mapOutlineItems = (items: any[]): TocItem[] => {
-              return items.map((item, idx) => ({
-                id: `pdf-toc-${idx}-${item.title}`,
-                label: item.title || `Section ${idx + 1}`,
-                href: typeof item.dest === 'string' ? item.dest : `#page=${idx + 1}`,
-                subitems: item.items && item.items.length > 0 ? mapOutlineItems(item.items) : undefined,
-              }))
-            }
-            setSidebarToc(mapOutlineItems(outline))
+          const outlineToc = await extractPdfToc(doc)
+          if (active && outlineToc.length > 0) {
+            setSidebarToc(outlineToc)
           }
         } catch (outlineErr) {
-          console.warn('PDF outline not present or error extracting:', outlineErr)
+          console.warn('PDF outline extraction error:', outlineErr)
         }
 
         setLoadingDoc(false)
@@ -211,24 +204,68 @@ export function PdfReader({
 
       if (pageNum !== currentPage) {
         setCurrentPage(pageNum)
+        setCurrentHref(`pdf:page=${pageNum}`)
       }
 
       if (onPageChange) {
         onPageChange(pageNum, numPages, offsetRatio)
       }
     }
-  }, [virtualizer, numPages, currentPage, onPageChange, containerRef])
+  }, [virtualizer, numPages, currentPage, onPageChange, containerRef, setCurrentHref])
 
-  // 6. Direct Page Jump Action
+  // 6. Direct Page Jump Action with optional destination Y coordinate
   const jumpToPage = useCallback(
-    (targetPage: number) => {
-      if (!virtualizer || numPages === 0) return
+    (targetPage: number, destY?: number) => {
+      if (!virtualizer || numPages === 0 || !containerRef.current) return
       const clampedPage = Math.max(1, Math.min(numPages, targetPage))
-      virtualizer.scrollToIndex(clampedPage - 1, { align: 'start' })
+      const targetIndex = clampedPage - 1
+
+      virtualizer.scrollToIndex(targetIndex, { align: 'start' })
       setCurrentPage(clampedPage)
+      setCurrentHref(`pdf:page=${clampedPage}${destY !== undefined ? `&y=${destY}` : ''}`)
+
+      if (destY !== undefined) {
+        // After DOM layout update, adjust scroll position to the requested coordinate
+        setTimeout(() => {
+          if (!containerRef.current) return
+          const virtualItems = virtualizer.getVirtualItems()
+          const targetItem = virtualItems.find((item) => item.index === targetIndex)
+          if (targetItem) {
+            const pageHeight = Math.max(1, targetItem.size - 32)
+            // PDF points are measured from the bottom-left; convert to top-down offset
+            const offsetFromTop = Math.max(0, Math.min(pageHeight, pageHeight - destY * scale))
+            containerRef.current.scrollTop = targetItem.start + offsetFromTop
+          }
+        }, 50)
+      }
     },
-    [virtualizer, numPages],
+    [virtualizer, numPages, setCurrentHref, scale, containerRef],
   )
+
+  // Register navigation callback for sidebar Table of Contents
+  useEffect(() => {
+    const handlePdfNavigation = (href: string) => {
+      if (href.startsWith('pdf:page=')) {
+        const pageMatch = href.match(/pdf:page=(\d+)/)
+        const yMatch = href.match(/[?&]y=([\d.-]+)/)
+        if (pageMatch) {
+          const targetPage = parseInt(pageMatch[1], 10)
+          const targetY = yMatch ? parseFloat(yMatch[1]) : undefined
+          jumpToPage(targetPage, targetY)
+        }
+      } else if (href.startsWith('#page=')) {
+        const pageMatch = href.match(/#page=(\d+)/)
+        if (pageMatch) {
+          jumpToPage(parseInt(pageMatch[1], 10))
+        }
+      } else if (!isNaN(Number(href))) {
+        jumpToPage(Number(href))
+      }
+    }
+
+    registerNavigation(handlePdfNavigation)
+    return () => registerNavigation(() => {})
+  }, [jumpToPage, registerNavigation])
 
   // 7. Zoom Controls
   const handleZoomIn = () => setScale((s) => Math.min(3.0, Number((s + 0.15).toFixed(2))))

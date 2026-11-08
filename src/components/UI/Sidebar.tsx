@@ -11,12 +11,35 @@ interface SidebarProps {
   currentHref?: string | null
 }
 
-export function Sidebar({ toc, isOpen, onClose, currentHref }: SidebarProps) {
+export function Sidebar({ toc, isOpen, onClose, currentHref: propCurrentHref }: SidebarProps) {
   const { currentTheme } = useTheme()
-  const { navigate } = useSidebar()
+  const { navigate, currentHref: contextCurrentHref } = useSidebar()
+  const activeHref = propCurrentHref ?? contextCurrentHref
   const [searchTerm, setSearchTerm] = useState('')
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const isLight = currentTheme === 'light'
+
+  const isItemActive = (itemHref: string, current: string | null | undefined): boolean => {
+    if (!current) return false
+    if (itemHref === current) return true
+
+    // PDF page comparison
+    if (itemHref.startsWith('pdf:page=') && current.startsWith('pdf:page=')) {
+      const itemPage = itemHref.match(/pdf:page=(\d+)/)?.[1]
+      const currentPage = current.match(/pdf:page=(\d+)/)?.[1]
+      return Boolean(itemPage && currentPage && itemPage === currentPage)
+    }
+
+    // EPUB relative and fragment comparison
+    const cleanItem = itemHref.split('#')[0]
+    const cleanCurrent = current.split('#')[0]
+    if (cleanItem && cleanCurrent) {
+      if (cleanItem === cleanCurrent) return true
+      if (cleanCurrent.endsWith(cleanItem) || cleanItem.endsWith(cleanCurrent)) return true
+    }
+
+    return current.endsWith(itemHref)
+  }
 
   const filterToc = (items: TocItem[], term: string): TocItem[] => {
     if (!term.trim()) return items
@@ -43,7 +66,7 @@ export function Sidebar({ toc, isOpen, onClose, currentHref }: SidebarProps) {
 
   const renderTocItems = (items: TocItem[], level = 0) => {
     return items.map((item, index) => {
-      const isCurrent = currentHref && (item.href === currentHref || currentHref.endsWith(item.href))
+      const isCurrent = isItemActive(item.href, activeHref)
 
       return (
         <div key={item.id || `toc-${level}-${index}`} className="flex flex-col">
