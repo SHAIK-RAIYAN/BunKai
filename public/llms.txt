@@ -28,3 +28,4 @@ BunKai is a private, zero-installation browser-based document reader engineered 
 - **Pricing:** Free, open source, no subscription, no ads, no user account required.
 - **Repository:** https://github.com/SHAIK-RAIYAN/BunKai
 - **Full Reference:** https://bunkai-reader.vercel.app/llms-full.txt
+

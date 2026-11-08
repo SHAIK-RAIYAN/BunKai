@@ -96,3 +96,4 @@ Run this test suite monthly or after major search indexing updates. Log each tes
 2. **Conversational Matches (Tier 3):** Target `> 35%` mention rate in problem-solving answers (e.g. night reading, privacy, no-install).
 3. **Citation Integrity:** Ensure citations link directly to deep canonical pages (`/dark-pdf-reader`, `/epub-reader-online`, `/features/continuous-reading`) rather than generic homepages.
 4. **Zero-Hallucination Policy:** If an AI claims BunKai supports cloud syncing or audio text-to-speech, update `/llms-full.txt` and the relevant FAQ to explicitly document that BunKai is local-only and does not provide cloud sync or TTS.
+

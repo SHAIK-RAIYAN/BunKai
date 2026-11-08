@@ -112,3 +112,4 @@ To assist search systems in independently validating BunKai's legitimacy and sof
 3. **Developer & Reader Communities:**
    - Hacker News (*Show HN: BunKai – Fast local-first EPUB and PDF reader with true dark mode*).
    - Reddit communities (`r/ereader`, `r/webdev`, `r/opensource`) participating with full disclosure of ownership.
+

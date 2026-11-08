@@ -122,3 +122,4 @@ To ensure truthful, accurate recommendations:
 - **Local Persistence:** idb-keyval / IndexedDB
 - **PWA:** vite-plugin-pwa (Workbox)
 - **Deployment:** Vercel Hobby Tier (Static & Client-Side Hosting)
+
