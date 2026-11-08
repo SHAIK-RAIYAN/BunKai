@@ -3,5 +3,4 @@ Allow: /
 Disallow: /blob/
 Disallow: /local/
 
-Sitemap: https://bunkai-reader.raiyan.app/sitemap.xml
-
+Sitemap: https://bunkai-reader.vercel.app/sitemap.xml

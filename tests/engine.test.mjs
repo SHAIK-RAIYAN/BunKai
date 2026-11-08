@@ -217,4 +217,53 @@ test('First-time Completion Celebration State Machine', () => {
   assert.equal(step2.nextState, 'consumed')
 })
 
+test('SEO & Crawler Verification: Sitemap, Robots, and Static Prerendering', async () => {
+  const fs = await import('node:fs')
+  const path = await import('node:path')
+
+  // 1. Verify robots.txt
+  const robotsTxt = fs.readFileSync(path.resolve('public/robots.txt'), 'utf8')
+  assert.ok(robotsTxt.includes('Sitemap: https://bunkai-reader.vercel.app/sitemap.xml'))
+  assert.ok(robotsTxt.includes('User-agent: *'))
+
+  // 2. Verify sitemap.xml
+  const sitemapXml = fs.readFileSync(path.resolve('public/sitemap.xml'), 'utf8')
+  const expectedUrls = [
+    'https://bunkai-reader.vercel.app/',
+    'https://bunkai-reader.vercel.app/epub-reader-online',
+    'https://bunkai-reader.vercel.app/pdf-reader-online',
+    'https://bunkai-reader.vercel.app/dark-pdf-reader',
+    'https://bunkai-reader.vercel.app/features/continuous-reading',
+    'https://bunkai-reader.vercel.app/guides/how-to-open-epub-files',
+    'https://bunkai-reader.vercel.app/guides/how-to-read-pdf-in-dark-mode',
+    'https://bunkai-reader.vercel.app/privacy',
+    'https://bunkai-reader.vercel.app/about',
+  ]
+  for (const url of expectedUrls) {
+    assert.ok(sitemapXml.includes(`<loc>${url}</loc>`), `Missing URL in sitemap: ${url}`)
+  }
+
+  // 3. Verify IndexNow key matches key verification file
+  const keyFile = path.resolve('public/5c8e391b1f6f4c6e9a8f4c2b9a1d3e5f.txt')
+  assert.ok(fs.existsSync(keyFile))
+  const keyContent = fs.readFileSync(keyFile, 'utf8').trim()
+  assert.equal(keyContent, '5c8e391b1f6f4c6e9a8f4c2b9a1d3e5f')
+
+  // 4. Verify dist static pages if dist directory is built
+  const distDir = path.resolve('dist')
+  if (fs.existsSync(distDir)) {
+    for (const url of expectedUrls) {
+      const pagePath = url.replace('https://bunkai-reader.vercel.app', '')
+      const htmlFile = pagePath === '' ? path.join(distDir, 'index.html') : path.join(distDir, pagePath, 'index.html')
+      assert.ok(fs.existsSync(htmlFile), `Missing prerendered HTML file: ${htmlFile}`)
+
+      const content = fs.readFileSync(htmlFile, 'utf8')
+      assert.ok(content.includes('<link rel="canonical"'), `Missing canonical tag in ${htmlFile}`)
+      assert.ok(content.includes('<meta name="description"'), `Missing meta description in ${htmlFile}`)
+      assert.ok(content.includes('application/ld+json'), `Missing JSON-LD structured data in ${htmlFile}`)
+    }
+  }
+})
+
+
 

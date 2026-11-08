@@ -1,8 +1,8 @@
 # BunKai — Organic Search Strategy & Technical SEO Blueprint
 
-**Primary Canonical Domain:** [https://bunkai-reader.raiyan.app/](https://bunkai-reader.raiyan.app/)  
-**Secondary Deployment (301 Permanent Redirect):** `https://bunkai-reader.vercel.app/`  
-**Strategy Version:** 2.0 (Post-Upgrade Architecture)
+**Primary Canonical Domain:** [https://bunkai-reader.vercel.app/](https://bunkai-reader.vercel.app/)  
+**Hosting Model:** Vercel Free Production Deployment (Permanent Free Hosting)  
+**Strategy Version:** 3.0 (Vercel Free Domain Permanent Migration)
 
 ---
 
@@ -26,25 +26,25 @@ Rather than relying on generic keyword stuffing or doorway pages, BunKai capture
 ### Cluster A: Core EPUB Reading (High Intent, High Volume)
 - **Primary Keywords:** `epub reader online`, `free epub reader`, `read epub in browser`, `open epub file online`
 - **Search Intent:** Users with an `.epub` file on Windows, Mac, Chromebook, or mobile who want to start reading immediately without downloading Calibre or Adobe Digital Editions.
-- **Target Landing Page:** [`/epub-reader-online`](https://bunkai-reader.raiyan.app/epub-reader-online)
+- **Target Landing Page:** [`/epub-reader-online`](https://bunkai-reader.vercel.app/epub-reader-online)
 - **Competitive Advantage:** Instant drag-and-drop, paginated + continuous modes, OLED themes, no account required.
 
 ### Cluster B: True PDF Dark Mode (High Differentiation, Low-to-Medium Difficulty)
 - **Primary Keywords:** `dark mode pdf reader`, `pdf dark mode`, `read pdf in dark mode`, `invert pdf colors preserve images`
 - **Search Intent:** Developers, students, and researchers reading dense PDF papers at night who suffer from blinding white backgrounds or distorted inverted images.
-- **Target Landing Page:** [`/dark-pdf-reader`](https://bunkai-reader.raiyan.app/dark-pdf-reader) & [`/guides/how-to-read-pdf-in-dark-mode`](https://bunkai-reader.raiyan.app/guides/how-to-read-pdf-in-dark-mode)
+- **Target Landing Page:** [`/dark-pdf-reader`](https://bunkai-reader.vercel.app/dark-pdf-reader) & [`/guides/how-to-read-pdf-in-dark-mode`](https://bunkai-reader.vercel.app/guides/how-to-read-pdf-in-dark-mode)
 - **Competitive Advantage:** Proprietary PDF.js operator-level image detection preserves authentic RGB photo colors while darkening text and paper.
 
 ### Cluster C: Educational Guides & Troubleshooting (Informational Intent)
 - **Primary Keywords:** `how to open epub files`, `how to read epub on pc without app`, `how to read pdf in dark mode`
 - **Search Intent:** Searchers looking for step-by-step instructions.
-- **Target Landing Pages:** [`/guides/how-to-open-epub-files`](https://bunkai-reader.raiyan.app/guides/how-to-open-epub-files), [`/guides/how-to-read-pdf-in-dark-mode`](https://bunkai-reader.raiyan.app/guides/how-to-read-pdf-in-dark-mode)
+- **Target Landing Pages:** [`/guides/how-to-open-epub-files`](https://bunkai-reader.vercel.app/guides/how-to-open-epub-files), [`/guides/how-to-read-pdf-in-dark-mode`](https://bunkai-reader.vercel.app/guides/how-to-read-pdf-in-dark-mode)
 - **Schema:** Formatted with Schema.org `HowTo` and `Article` structured data for search engine understanding.
 
 ### Cluster D: Privacy & Local-First (High Trust, Zero Server Upload)
 - **Primary Keywords:** `private pdf reader`, `read pdf without uploading`, `local pdf reader in browser`, `offline epub reader`
 - **Search Intent:** Legal, medical, and security-conscious readers requiring absolute document privacy.
-- **Target Landing Page:** [`/privacy`](https://bunkai-reader.raiyan.app/privacy)
+- **Target Landing Page:** [`/privacy`](https://bunkai-reader.vercel.app/privacy)
 - **Proof:** All file processing, rendering, and persistence occur strictly within local browser memory and IndexedDB.
 
 ---
@@ -63,9 +63,9 @@ Rather than relying on generic keyword stuffing or doorway pages, BunKai capture
 ## 4. Technical SEO Architecture
 
 ### 4.1 Canonical Domain Enforcement
-- **Canonical Host:** `https://bunkai-reader.raiyan.app/`
-- Every public page renders `<link rel="canonical" href="https://bunkai-reader.raiyan.app/..." />`.
-- `vercel.json` issues a permanent `301` HTTP redirect from `bunkai-reader.vercel.app` to `bunkai-reader.raiyan.app` across all routes.
+- **Canonical Host:** `https://bunkai-reader.vercel.app/`
+- Every public page renders `<link rel="canonical" href="https://bunkai-reader.vercel.app/..." />`.
+- `vercel.json` removes old custom domain dependencies and routes all canonical traffic directly to `bunkai-reader.vercel.app`.
 - Open Graph (`og:url`), Twitter cards, and sitemap entries strictly point to the primary canonical domain.
 
 ### 4.2 Static Prerendering Pipeline (`scripts/generate-seo-pages.mjs`)
@@ -90,10 +90,11 @@ Truthful, verified structured data without fabricated reviews:
 ## 5. Search Engine Discovery & Monitoring Setup
 
 ### Google Search Console
-1. **Verification:** DNS TXT record on `raiyan.app` or HTML meta tag / file upload.
-2. **Sitemap Submission:** Submit `https://bunkai-reader.raiyan.app/sitemap.xml`.
-3. **Inspection:** Run URL Inspection on `/`, `/epub-reader-online`, and `/dark-pdf-reader`.
-4. **Monitoring:** Track Total Impressions, Clicks, Average Position, and Core Web Vitals (LCP, INP, CLS).
+1. **Property Creation:** Add URL-prefix property `https://bunkai-reader.vercel.app/`.
+2. **Verification:** Add HTML meta tag or verify via Google Account.
+3. **Sitemap Submission:** Submit `https://bunkai-reader.vercel.app/sitemap.xml`.
+4. **Inspection:** Run URL Inspection on `/`, `/epub-reader-online`, and `/dark-pdf-reader`.
+5. **Monitoring:** Track Total Impressions, Clicks, Average Position, and Core Web Vitals (LCP, INP, CLS).
 
 ### Bing Webmaster Tools
 1. **Verification & Import:** Connect Bing Webmaster Tools using Google Search Console integration or DNS.

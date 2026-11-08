@@ -3,7 +3,7 @@
 
 > A high-performance, local-first reading application supporting both **EPUB** and **PDF** formats with specialized rendering engines, virtualized continuous scrolling, advanced PDF dark mode with embedded image preservation, unified auto-scroll, exact reading-position restoration, and a refined neutral monochrome interface.
 
-🌐 **Live Demo:** [https://bunkai-reader.raiyan.app/](https://bunkai-reader.raiyan.app/)
+🌐 **Live Production URL:** [https://bunkai-reader.vercel.app/](https://bunkai-reader.vercel.app/)
 
 ---
 
@@ -68,7 +68,7 @@ Built according to Emil Kowalski, Impeccable, and modern design engineering stan
 - **First-Completion Confetti Celebration**: When a document is finished for the first time, an IndexedDB state machine marks `celebrationState = 'pending'`. Upon returning to the library, a refined localized confetti animation celebrates the achievement once and persists `celebrationState = 'consumed'`.
 
 ### 7. Technical SEO & Static Prerendering Architecture
-- **Primary Canonical Domain**: All sitemaps, canonical tags, Open Graph, Twitter cards, and structured data enforce `https://bunkai-reader.raiyan.app/`.
+- **Primary Canonical Domain**: All sitemaps, canonical tags, Open Graph, Twitter cards, and structured data enforce `https://bunkai-reader.vercel.app/`.
 - **Permanent 301 Redirect**: Secondary deployments (`bunkai-reader.vercel.app`) permanently redirect to the primary host via `vercel.json`.
 - **Static Prerender Pipeline**: Build-time script generates 9 static HTML landing pages and educational guides in `dist/` with full semantic HTML, Primary H1s, Schema.org JSON-LD, and zero document engine overhead for web crawlers.
 - **Search Engine Discovery**: Includes verified `sitemap.xml`, `robots.txt`, and IndexNow integration (`npm run seo:indexnow`) to ping Bing, Yandex, Naver, and Seznam.

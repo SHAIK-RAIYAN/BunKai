@@ -2,7 +2,8 @@ import fs from 'node:fs'
 import path from 'node:path'
 
 const DIST_DIR = path.resolve('dist')
-const BASE_URL = 'https://bunkai-reader.raiyan.app'
+const PUBLIC_DIR = path.resolve('public')
+const BASE_URL = 'https://bunkai-reader.vercel.app'
 
 // Common CSS style block for fast first paint on crawlable shells
 const CRITICAL_CSS = `
@@ -58,65 +59,78 @@ const CRITICAL_CSS = `
   p {
     margin: 0 0 1.25rem;
     color: #a1a1aa;
-    font-size: 1rem;
+    font-size: 1.05rem;
+  }
+  p.lead {
+    font-size: 1.2rem;
+    color: #d4d4d8;
+    line-height: 1.7;
   }
   ul, ol {
-    margin: 0 0 1.5rem;
-    padding-left: 1.5rem;
+    margin: 0 0 1.5rem 1.5rem;
     color: #a1a1aa;
+    font-size: 1.05rem;
   }
   li {
     margin-bottom: 0.5rem;
   }
+  strong {
+    color: #f4f4f5;
+  }
+  code {
+    background: rgba(255,255,255,0.08);
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.9em;
+    color: #e4e4e7;
+  }
   .seo-cta-box {
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 1rem;
-    padding: 2rem;
     margin: 2.5rem 0;
+    padding: 2rem;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
     text-align: center;
   }
   .seo-cta-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    background-color: #ffffff;
-    color: #000000;
+    display: inline-block;
+    background: #ffffff;
+    color: #0c0c0e;
     font-weight: 600;
-    font-size: 0.95rem;
     padding: 0.75rem 1.75rem;
-    border-radius: 0.75rem;
+    border-radius: 9999px;
     text-decoration: none;
-    transition: transform 0.15s ease, background 0.15s ease;
+    margin-top: 1rem;
+    transition: opacity 0.15s;
   }
   .seo-cta-btn:hover {
-    background-color: #f4f4f5;
-    transform: translateY(-1px);
+    opacity: 0.9;
+  }
+  .seo-footer {
+    border-top: 1px solid rgba(255,255,255,0.1);
+    margin-top: 4rem;
+    padding-top: 2rem;
+    font-size: 0.9rem;
+    color: #71717a;
   }
   .seo-nav-links {
     display: flex;
     flex-wrap: wrap;
     gap: 1rem;
-    margin-top: 1.5rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid rgba(255,255,255,0.08);
+    margin-top: 1rem;
   }
   .seo-nav-links a {
     color: #a1a1aa;
     text-decoration: none;
-    font-size: 0.875rem;
-    transition: color 0.15s ease;
   }
   .seo-nav-links a:hover {
     color: #ffffff;
-    text-decoration: underline;
   }
-  .badge {
+  .seo-badge {
     display: inline-block;
-    padding: 0.25rem 0.6rem;
-    background: rgba(16, 185, 129, 0.15);
-    color: #34d399;
-    border: 1px solid rgba(16, 185, 129, 0.25);
+    padding: 0.25rem 0.75rem;
+    background: rgba(255,255,255,0.1);
+    color: #d4d4d8;
     border-radius: 9999px;
     font-size: 0.75rem;
     font-weight: 600;
@@ -159,7 +173,7 @@ const PAGES = [
         {
           '@type': 'WebApplication',
           name: 'BunKai',
-          url: 'https://bunkai-reader.raiyan.app/',
+          url: 'https://bunkai-reader.vercel.app/',
           applicationCategory: 'MultimediaApplication',
           operatingSystem: 'All (Web Browser)',
           offers: {
@@ -173,7 +187,7 @@ const PAGES = [
         {
           '@type': 'WebSite',
           name: 'BunKai Reader',
-          url: 'https://bunkai-reader.raiyan.app/',
+          url: 'https://bunkai-reader.vercel.app/',
         },
       ],
     },
@@ -214,7 +228,7 @@ const PAGES = [
       name: 'BunKai Online EPUB Reader',
       applicationCategory: 'MultimediaApplication',
       operatingSystem: 'Web Browser',
-      url: 'https://bunkai-reader.raiyan.app/epub-reader-online',
+      url: 'https://bunkai-reader.vercel.app/epub-reader-online',
       description: 'Free browser-based EPUB reader with continuous scrolling, paginated mode, and OLED themes.',
     },
   },
@@ -250,7 +264,7 @@ const PAGES = [
       name: 'BunKai Online PDF Viewer',
       applicationCategory: 'MultimediaApplication',
       operatingSystem: 'Web Browser',
-      url: 'https://bunkai-reader.raiyan.app/pdf-reader-online',
+      url: 'https://bunkai-reader.vercel.app/pdf-reader-online',
       description: 'Virtualized web PDF reader with continuous scrolling and bounded memory.',
     },
   },
@@ -288,7 +302,7 @@ const PAGES = [
       name: 'BunKai Dark Mode PDF Reader',
       applicationCategory: 'MultimediaApplication',
       operatingSystem: 'Web Browser',
-      url: 'https://bunkai-reader.raiyan.app/dark-pdf-reader',
+      url: 'https://bunkai-reader.vercel.app/dark-pdf-reader',
       description: 'PDF dark mode reader that preserves embedded images and diagrams in true colors.',
     },
   },
@@ -320,6 +334,23 @@ const PAGES = [
         <a href="/" class="seo-cta-btn">Try Continuous Mode</a>
       </div>
     `,
+    structuredData: {
+      '@context': 'https://schema.org',
+      '@type': 'TechArticle',
+      headline: 'Continuous Vertical Reading for EPUB Ebooks',
+      description:
+        'How continuous vertical scrolling and auto-scrolling transform EPUB reading into a smooth, distraction-free experience.',
+      url: 'https://bunkai-reader.vercel.app/features/continuous-reading',
+      author: {
+        '@type': 'Organization',
+        name: 'BunKai',
+      },
+      publisher: {
+        '@type': 'Organization',
+        name: 'BunKai',
+        url: 'https://bunkai-reader.vercel.app/',
+      },
+    },
   },
   {
     path: 'guides/how-to-open-epub-files',
@@ -334,7 +365,7 @@ const PAGES = [
       </p>
 
       <h2>Step 1: Open BunKai in Your Browser</h2>
-      <p>Navigate to <a href="/" style="color:#ffffff;">bunkai-reader.raiyan.app</a> on any device running Chrome, Safari, Firefox, Edge, or Brave.</p>
+      <p>Navigate to <a href="/" style="color:#ffffff;">bunkai-reader.vercel.app</a> on any device running Chrome, Safari, Firefox, Edge, or Brave.</p>
 
       <h2>Step 2: Drag and Drop Your EPUB File</h2>
       <p>Drag your <code>.epub</code> file directly onto the library screen, or tap <strong>Import EPUB or PDF</strong> to browse your file system.</p>
@@ -359,7 +390,7 @@ const PAGES = [
         {
           '@type': 'HowToStep',
           name: 'Open BunKai in Browser',
-          text: 'Navigate to bunkai-reader.raiyan.app in your web browser.',
+          text: 'Navigate to bunkai-reader.vercel.app in your web browser.',
         },
         {
           '@type': 'HowToStep',
@@ -388,7 +419,7 @@ const PAGES = [
 
       <h2>The Problem with Browser Extensions</h2>
       <p>
-        Dark mode extensions apply a simple CSS filter: <code>invert(1) hue-rotate(180deg)</code>. While text becomes white and paper turns dark, every photo, colored diagram, and author headshot is inverted into a distorted photographic negative.
+        Dark mode extensions apply a simple CSS filter: <code>invert(1) hue-rotate(180deg)</code>. While text becomes white and paper turns dark, every photo, colored diagram, and author headshot is inverted into a photographic negative.
       </p>
 
       <h2>The BunKai Solution: Operator-Level Image Preservation</h2>
@@ -454,6 +485,17 @@ const PAGES = [
         <a href="/" class="seo-cta-btn">Launch Private Reader</a>
       </div>
     `,
+    structuredData: {
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: 'BunKai Privacy Policy & Local-First Architecture',
+      description: 'Zero document uploads, sandboxed IndexedDB storage, and client-side processing.',
+      url: 'https://bunkai-reader.vercel.app/privacy',
+      publisher: {
+        '@type': 'Organization',
+        name: 'BunKai',
+      },
+    },
   },
   {
     path: 'about',
@@ -486,6 +528,18 @@ const PAGES = [
         <a href="/" class="seo-cta-btn">Open Library</a>
       </div>
     `,
+    structuredData: {
+      '@context': 'https://schema.org',
+      '@type': 'AboutPage',
+      name: 'About BunKai',
+      description: 'High-performance local-first web document reader crafted for digital readers.',
+      url: 'https://bunkai-reader.vercel.app/about',
+      publisher: {
+        '@type': 'Organization',
+        name: 'BunKai',
+        url: 'https://bunkai-reader.vercel.app/',
+      },
+    },
   },
 ]
 
@@ -523,20 +577,23 @@ function renderPage(templateHtml, page) {
   }
 
   const crawlableBody = `
-    <div id="root">
-      <div class="seo-container">
-        <div class="seo-header">
-          <a href="/" class="seo-logo">
-            <img src="/Bunkai-Chi-logo.png" alt="BunKai Logo" style="height:24px;width:24px;" />
-            <span>BunKai</span>
-          </a>
-          ${page.badge ? `<div class="badge">${page.badge}</div>` : ''}
-          <h1>${page.h1}</h1>
-        </div>
+    <div id="root"></div>
+    <div class="seo-container">
+      <header class="seo-header">
+        <a href="/" class="seo-logo">
+          <img src="/Bunkai-Chi-logo.png" alt="BunKai Logo" width="32" height="32" style="border-radius:6px;" />
+          <span>BunKai</span>
+        </a>
+        ${page.badge ? `<div class="seo-badge">${page.badge}</div>` : ''}
+        <h1>${page.h1}</h1>
+      </header>
 
-        <div class="seo-content">
-          ${page.contentHtml}
-        </div>
+      <main>
+        ${page.contentHtml}
+      </main>
+
+      <div class="seo-footer">
+        <p>© ${new Date().getFullYear()} BunKai. Local-first, private reading for everyone.</p>
 
         <nav class="seo-nav-links" aria-label="Quick links">
           <a href="/">Home</a>
@@ -561,6 +618,31 @@ function renderPage(templateHtml, page) {
   return html
 }
 
+function generateSitemap() {
+  const today = new Date().toISOString().split('T')[0]
+  let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`
+
+  for (const page of PAGES) {
+    const loc = `${BASE_URL}/${page.path ? page.path : ''}`.replace(/([^:]\/)\/+/g, '$1')
+    const priority = page.path === '' ? '1.0' : page.path.includes('guide') ? '0.8' : '0.9'
+    const freq = page.path === '' || page.path.includes('reader') ? 'weekly' : 'monthly'
+    xml += `  <url>\n    <loc>${loc}</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>${freq}</changefreq>\n    <priority>${priority}</priority>\n  </url>\n`
+  }
+
+  xml += `</urlset>\n`
+  return xml
+}
+
+function generateRobotsTxt() {
+  return `User-agent: *
+Allow: /
+Disallow: /blob/
+Disallow: /local/
+
+Sitemap: ${BASE_URL}/sitemap.xml
+`
+}
+
 function generate() {
   const indexTemplatePath = path.join(DIST_DIR, 'index.html')
   if (!fs.existsSync(indexTemplatePath)) {
@@ -569,7 +651,7 @@ function generate() {
   }
 
   const templateHtml = fs.readFileSync(indexTemplatePath, 'utf8')
-  console.log(`Generating ${PAGES.length} static SEO prerendered pages...`)
+  console.log(`Generating ${PAGES.length} static SEO prerendered pages for ${BASE_URL}...`)
 
   for (const page of PAGES) {
     const rendered = renderPage(templateHtml, page)
@@ -585,8 +667,21 @@ function generate() {
     }
   }
 
+  // Generate sitemap.xml and robots.txt in both public and dist directories
+  const sitemapXml = generateSitemap()
+  fs.writeFileSync(path.join(PUBLIC_DIR, 'sitemap.xml'), sitemapXml, 'utf8')
+  fs.writeFileSync(path.join(DIST_DIR, 'sitemap.xml'), sitemapXml, 'utf8')
+  console.log(`✓ Synchronized: public/sitemap.xml & dist/sitemap.xml`)
+
+  const robotsTxt = generateRobotsTxt()
+  fs.writeFileSync(path.join(PUBLIC_DIR, 'robots.txt'), robotsTxt, 'utf8')
+  fs.writeFileSync(path.join(DIST_DIR, 'robots.txt'), robotsTxt, 'utf8')
+  console.log(`✓ Synchronized: public/robots.txt & dist/robots.txt`)
+
   console.log('Static SEO prerendering complete!')
 }
 
+// Execute generate when run directly
 generate()
 
+export { PAGES, renderPage, generate, BASE_URL }

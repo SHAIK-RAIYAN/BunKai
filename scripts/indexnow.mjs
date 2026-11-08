@@ -4,7 +4,7 @@
  */
 import https from 'node:https'
 
-const HOST = 'bunkai-reader.raiyan.app'
+const HOST = 'bunkai-reader.vercel.app'
 const KEY = '5c8e391b1f6f4c6e9a8f4c2b9a1d3e5f'
 const KEY_LOCATION = `https://${HOST}/${KEY}.txt`
 
@@ -28,7 +28,7 @@ async function submitIndexNow() {
     urlList: URL_LIST,
   })
 
-  console.log(`Submitting ${URL_LIST.length} URLs to IndexNow (Bing)...`)
+  console.log(`Submitting ${URL_LIST.length} URLs to IndexNow (Bing) for ${HOST}...`)
 
   const options = {
     hostname: 'api.indexnow.org',
@@ -46,7 +46,7 @@ async function submitIndexNow() {
     if (res.statusCode === 200 || res.statusCode === 202) {
       console.log('IndexNow submission accepted successfully.')
     } else {
-      console.warn(`IndexNow returned unexpected status code: ${res.statusCode}`)
+      console.warn(`IndexNow returned response code: ${res.statusCode}`)
     }
   })
 
@@ -59,4 +59,3 @@ async function submitIndexNow() {
 }
 
 submitIndexNow()
-
