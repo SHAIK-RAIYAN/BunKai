@@ -15,6 +15,21 @@ interface AppShellProps {
   currentLocationHref?: string | null
 }
 
+interface VendorFullscreenElement extends HTMLElement {
+  webkitRequestFullscreen?: () => Promise<void>
+  mozRequestFullScreen?: () => Promise<void>
+  msRequestFullscreen?: () => Promise<void>
+}
+
+interface VendorFullscreenDocument extends Document {
+  webkitFullscreenElement?: Element | null
+  mozFullScreenElement?: Element | null
+  msFullscreenElement?: Element | null
+  webkitExitFullscreen?: () => Promise<void>
+  mozCancelFullScreen?: () => Promise<void>
+  msExitFullscreen?: () => Promise<void>
+}
+
 export function AppShell({
   children,
   title,
@@ -29,41 +44,81 @@ export function AppShell({
   const { currentTheme } = useTheme()
   const isLight = currentTheme === 'light'
 
-  const toggleImmersive = useCallback(() => {
-    setIsImmersive((prev) => {
-      const next = !prev
-      if (next) {
-        closeSidebar()
-        // Try browser fullscreen where supported
-        try {
-          if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
-            document.documentElement.requestFullscreen().catch(() => {})
-          }
-        } catch {}
-      } else {
-        try {
-          if (document.fullscreenElement && document.exitFullscreen) {
-            document.exitFullscreen().catch(() => {})
-          }
-        } catch {}
-      }
-      return next
-    })
-  }, [closeSidebar])
-
-  const exitImmersive = useCallback(() => {
-    setIsImmersive(false)
+  const requestBrowserFullscreen = useCallback(() => {
     try {
-      if (document.fullscreenElement && document.exitFullscreen) {
-        document.exitFullscreen().catch(() => {})
+      const elem = document.documentElement as VendorFullscreenElement
+      const doc = document as VendorFullscreenDocument
+      const isFs = Boolean(
+        doc.fullscreenElement ||
+        doc.webkitFullscreenElement ||
+        doc.mozFullScreenElement ||
+        doc.msFullscreenElement
+      )
+      if (!isFs) {
+        if (elem.requestFullscreen) {
+          elem.requestFullscreen().catch(() => {})
+        } else if (elem.webkitRequestFullscreen) {
+          elem.webkitRequestFullscreen()
+        } else if (elem.mozRequestFullScreen) {
+          elem.mozRequestFullScreen()
+        } else if (elem.msRequestFullscreen) {
+          elem.msRequestFullscreen()
+        }
       }
-    } catch {}
+    } catch (err) {
+      console.warn('Fullscreen request bypassed:', err)
+    }
   }, [])
+
+  const exitBrowserFullscreen = useCallback(() => {
+    try {
+      const doc = document as VendorFullscreenDocument
+      const isFs = Boolean(
+        doc.fullscreenElement ||
+        doc.webkitFullscreenElement ||
+        doc.mozFullScreenElement ||
+        doc.msFullscreenElement
+      )
+      if (isFs) {
+        if (doc.exitFullscreen) {
+          doc.exitFullscreen().catch(() => {})
+        } else if (doc.webkitExitFullscreen) {
+          doc.webkitExitFullscreen()
+        } else if (doc.mozCancelFullScreen) {
+          doc.mozCancelFullScreen()
+        } else if (doc.msExitFullscreen) {
+          doc.msExitFullscreen()
+        }
+      }
+    } catch (err) {
+      console.warn('Fullscreen exit error:', err)
+    }
+  }, [])
+
+  const enterReadingMode = useCallback(() => {
+    closeSidebar()
+    setSettingsOpen(false)
+    requestBrowserFullscreen()
+    setIsImmersive(true)
+  }, [closeSidebar, requestBrowserFullscreen])
+
+  const exitReadingMode = useCallback(() => {
+    exitBrowserFullscreen()
+    setIsImmersive(false)
+  }, [exitBrowserFullscreen])
+
+  const toggleReadingMode = useCallback(() => {
+    if (isImmersive) {
+      exitReadingMode()
+    } else {
+      enterReadingMode()
+    }
+  }, [isImmersive, exitReadingMode, enterReadingMode])
 
   // Predictable Escape key handling:
   // 1. If settings is open, close settings
   // 2. If sidebar is open, close sidebar
-  // 3. If in immersive mode, exit immersive mode
+  // 3. If in reading mode, exit reading mode
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -75,25 +130,41 @@ export function AppShell({
           closeSidebar()
         } else if (isImmersive) {
           e.preventDefault()
-          exitImmersive()
+          exitReadingMode()
         }
       }
     }
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [settingsOpen, isOpen, isImmersive, closeSidebar, exitImmersive])
+  }, [settingsOpen, isOpen, isImmersive, closeSidebar, exitReadingMode])
 
-  // Sync with browser native fullscreen exit (e.g. user pressed browser F11 or Esc)
+  // Sync with browser native fullscreen exit (e.g. user pressed browser Esc or F11)
   useEffect(() => {
     const handleFullscreenChange = () => {
-      if (!document.fullscreenElement && isImmersive) {
+      const doc = document as VendorFullscreenDocument
+      const isFs = Boolean(
+        doc.fullscreenElement ||
+        doc.webkitFullscreenElement ||
+        doc.mozFullScreenElement ||
+        doc.msFullscreenElement
+      )
+      if (!isFs && isImmersive) {
         setIsImmersive(false)
       }
     }
 
     document.addEventListener('fullscreenchange', handleFullscreenChange)
-    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange)
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange)
+    document.addEventListener('mozfullscreenchange', handleFullscreenChange)
+    document.addEventListener('MSFullscreenChange', handleFullscreenChange)
+
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange)
+      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange)
+      document.removeEventListener('mozfullscreenchange', handleFullscreenChange)
+      document.removeEventListener('MSFullscreenChange', handleFullscreenChange)
+    }
   }, [isImmersive])
 
   return (
@@ -108,7 +179,7 @@ export function AppShell({
           format={format}
           onToggleSidebar={toggleSidebar}
           onToggleSettings={() => setSettingsOpen(!settingsOpen)}
-          onToggleImmersive={showBackButton ? toggleImmersive : undefined}
+          onToggleImmersive={showBackButton ? toggleReadingMode : undefined}
           showBackButton={showBackButton}
           onBackToLibrary={onBackToLibrary}
           sidebarOpen={isOpen}
@@ -132,14 +203,14 @@ export function AppShell({
           </button>
 
           <button
-            onClick={exitImmersive}
+            onClick={exitReadingMode}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-medium backdrop-blur-xl shadow-lg transition-transform active:scale-[0.95] ${
               isLight
                 ? 'bg-white/90 border-gray-200 text-gray-800 hover:bg-white'
                 : 'bg-zinc-950/80 border-white/10 text-white hover:bg-zinc-900'
             }`}
-            title="Exit distraction-free reading (Esc)"
-            aria-label="Exit immersive mode"
+            title="Exit Reading Mode (Esc)"
+            aria-label="Exit reading mode"
           >
             {/* Minimize / Exit Icon */}
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
@@ -174,7 +245,7 @@ export function AppShell({
         onReturnToLibrary={onBackToLibrary}
         format={format}
         isImmersive={isImmersive}
-        onToggleImmersive={toggleImmersive}
+        onToggleImmersive={toggleReadingMode}
       />
     </div>
   )

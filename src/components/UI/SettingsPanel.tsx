@@ -84,29 +84,52 @@ export function SettingsPanel({
                 </button>
               </div>
 
-              {/* Immersive Reading Mode Toggle */}
+              {/* Reading Mode Button */}
               {onToggleImmersive && (
                 <div className="mb-6 pb-5 border-b border-white/10 dark:border-white/10">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-xs font-semibold tracking-wide">Reading Mode</span>
+                    {isImmersive && (
+                      <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-500 dark:text-emerald-400 border border-emerald-500/20">
+                        Active
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-[11px] opacity-60 mb-3">
+                    Expands the tab to full screen and removes all distractions for an immersive reading experience.
+                  </p>
                   <button
                     onClick={() => {
                       onToggleImmersive()
                       onClose()
                     }}
-                    className={`w-full py-2.5 px-3 rounded-xl text-xs font-medium flex items-center justify-between border transition-all active:scale-[0.98] ${
+                    className={`w-full py-2.5 px-3.5 rounded-xl text-xs font-medium flex items-center justify-between border transition-all active:scale-[0.98] shadow-xs ${
                       isImmersive
-                        ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-500 dark:text-emerald-400'
+                        ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-500 dark:text-emerald-400 hover:bg-emerald-500/20'
                         : isLight
-                          ? 'bg-gray-100 hover:bg-gray-200 border-gray-200 text-gray-900'
-                          : 'bg-white/5 hover:bg-white/10 border-white/10 text-white'
+                          ? 'bg-gray-900 text-white border-gray-900 hover:bg-black shadow-sm'
+                          : 'bg-white text-zinc-950 border-white hover:bg-gray-100 shadow-sm'
                     }`}
                   >
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 font-semibold">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                        {isImmersive ? (
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        ) : (
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                        )}
                       </svg>
-                      <span>{isImmersive ? 'Exit Immersive Mode' : 'Immersive Reading Mode'}</span>
+                      <span>{isImmersive ? 'Exit Reading Mode' : 'Reading Mode'}</span>
                     </div>
-                    <span className="text-[10px] font-mono opacity-60">Esc</span>
+                    <span className={`text-[10px] font-mono px-2 py-0.5 rounded ${
+                      isImmersive
+                        ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-300'
+                        : isLight
+                          ? 'bg-white/20 text-white'
+                          : 'bg-zinc-900/10 text-zinc-900'
+                    }`}>
+                      {isImmersive ? 'Esc to exit' : 'Fullscreen'}
+                    </span>
                   </button>
                 </div>
               )}

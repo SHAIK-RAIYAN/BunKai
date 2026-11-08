@@ -95,8 +95,8 @@ export function Header({
           <button
             onClick={onToggleImmersive}
             className="p-2 rounded-lg opacity-80 hover:opacity-100 hover:bg-black/5 dark:hover:bg-white/10 transition-transform active:scale-[0.96] transition-colors"
-            aria-label="Enter distraction-free reading mode"
-            title="Immersive Reading Mode"
+            aria-label="Enter fullscreen reading mode"
+            title="Reading Mode (Fullscreen)"
           >
             {/* Expand / Maximize Icon */}
             <svg
