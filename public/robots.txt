@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /blob/
+Disallow: /local/
+
+Sitemap: https://bunkai-reader.raiyan.app/sitemap.xml

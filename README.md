@@ -56,6 +56,23 @@ Built according to Emil Kowalski, Impeccable, and modern design engineering stan
   - 150–240ms ease-out transitions (`cubic-bezier(0.23, 1, 0.32, 1)`), tactile button presses (`active:scale-[0.97]`).
   - Concentric border radii and Beautiful Shadows layered elevation.
 
+### 5. Immersive Distraction-Free Reading Mode
+- **Full Viewport Immersion**: Strips away headers, sidebars, and peripheral UI so the document commands 100% of the display.
+- **Minimal Discrete Floating Controls**: A subtle floating trigger button dims during reading and reveals on hover/tap, offering quick access to reading settings.
+- **Predictable Escape Priority**: Pressing `Escape` smoothly closes the active settings popover first, or exits immersive mode back to the standard workspace.
+- **Browser Fullscreen Support**: Smoothly integrates with `requestFullscreen` when supported by the device, maintaining an edge-to-edge layout if permissions are withheld.
+
+### 6. Accurate Reading Progress, Active Time & Celebration
+- **Accurate EPUB Percentage**: Combines background byte-level location generation (`locations.percentageFromCfi`) with spine item interpolation to guarantee real progress increments both within and across chapters.
+- **Active Foreground Reading Time**: Tracks actual focused reading time in seconds, excluding backgrounded tabs, idle periods, or minimized windows.
+- **First-Completion Confetti Celebration**: When a document is finished for the first time, an IndexedDB state machine marks `celebrationState = 'pending'`. Upon returning to the library, a refined localized confetti animation celebrates the achievement once and persists `celebrationState = 'consumed'`.
+
+### 7. Technical SEO & Static Prerendering Architecture
+- **Primary Canonical Domain**: All sitemaps, canonical tags, Open Graph, Twitter cards, and structured data enforce `https://bunkai-reader.raiyan.app/`.
+- **Permanent 301 Redirect**: Secondary deployments (`bunkai-reader.vercel.app`) permanently redirect to the primary host via `vercel.json`.
+- **Static Prerender Pipeline**: Build-time script generates 9 static HTML landing pages and educational guides in `dist/` with full semantic HTML, Primary H1s, Schema.org JSON-LD, and zero document engine overhead for web crawlers.
+- **Search Engine Discovery**: Includes verified `sitemap.xml`, `robots.txt`, and IndexNow integration (`npm run seo:indexnow`) to ping Bing, Yandex, Naver, and Seznam.
+
 ---
 
 ## 🛠️ Tech Stack
@@ -150,8 +167,11 @@ npm test
 # Run ESLint validation
 npm run lint
 
-# Compile production build
+# Compile production build with SEO prerendered pages
 npm run build
+
+# Submit canonical URLs to IndexNow (Bing, Yandex, Naver)
+npm run seo:indexnow
 
 # Preview production build locally
 npm run preview
@@ -163,9 +183,12 @@ npm run preview
 
 | Shortcut | Action |
 | --- | --- |
+| `Escape` | Close settings panel / Exit immersive reading mode |
 | `Arrow Right` / `Page Down` | Next page (EPUB paginated mode) |
 | `Arrow Left` / `Page Up` | Previous page (EPUB paginated mode) |
 | `Alt + Down` / `Page Down` | Jump to next page (PDF mode) |
+| `Alt + Up` / `Page Up` | Jump to previous page (PDF mode) |
+| `Home` / `End` | Jump to first / last page (PDF mode) |
 | `Alt + Up` / `Page Up` | Jump to previous page (PDF mode) |
 | `Home` / `End` | Jump to first / last page (PDF mode) |
 

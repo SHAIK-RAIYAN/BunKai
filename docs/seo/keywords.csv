@@ -1,0 +1,34 @@
+Keyword,Keyword Cluster,Search Intent,Target Audience,Geographic Location,Monthly Search Volume (Est),Competition,Organic Difficulty (Est),Target Landing Page,Priority
+epub reader,Core EPUB,Informational/Commercial,Book readers & students,Global,"450,000",High,82,/,P1
+epub reader online,Core EPUB,Transactional,Desktop & web readers,Global,"110,000",Medium,65,/epub-reader-online,P1
+free epub reader,Core EPUB,Transactional,General readers,Global,"90,000",Medium,61,/epub-reader-online,P1
+online epub reader,Core EPUB,Transactional,Students & researchers,Global,"74,000",Medium,58,/epub-reader-online,P1
+epub viewer,Core EPUB,Informational,Developers & publishers,Global,"40,000",Medium,55,/epub-reader-online,P2
+open epub file online,Core EPUB,Troubleshooting,Casual users,Global,"33,000",Low-Med,48,/guides/how-to-open-epub-files,P1
+read epub online,Core EPUB,Transactional,Casual ebook readers,Global,"49,000",Medium,59,/epub-reader-online,P1
+read epub in browser,Core EPUB,Transactional,Chromebook & desktop users,Global,"14,000",Low-Med,42,/epub-reader-online,P1
+how to open epub files,Core EPUB Guides,Informational,General public,Global,"60,000",Medium,52,/guides/how-to-open-epub-files,P1
+pdf reader,Core PDF,Navigational/Commercial,Broad audience,Global,"1,800,000",High,92,/,P2
+online pdf reader,Core PDF,Transactional,Business & academic,Global,"201,000",High,74,/pdf-reader-online,P1
+free pdf reader,Core PDF,Transactional,Students & professionals,Global,"165,000",High,78,/pdf-reader-online,P2
+pdf viewer online,Core PDF,Transactional,Web users,Global,"90,000",Medium,63,/pdf-reader-online,P1
+read pdf online,Core PDF,Transactional,Casual readers,Global,"110,000",Medium,67,/pdf-reader-online,P1
+dark mode pdf reader,Dark PDF,Commercial/Transactional,Night readers & programmers,Global,"22,000",Low-Med,41,/dark-pdf-reader,P1
+pdf dark mode,Dark PDF,Informational,Students & night readers,Global,"33,000",Medium,49,/dark-pdf-reader,P1
+read pdf in dark mode,Dark PDF,Transactional,Programmers & academics,Global,"18,000",Low-Med,38,/guides/how-to-read-pdf-in-dark-mode,P1
+dark pdf reader,Dark PDF,Transactional,Night readers,Global,"14,000",Low-Med,39,/dark-pdf-reader,P1
+pdf night mode,Dark PDF,Informational,Mobile & laptop users,Global,"12,000",Low-Med,36,/dark-pdf-reader,P2
+invert pdf colors without inverting images,Dark PDF,Troubleshooting,Technical readers & scientists,Global,"4,500",Low,28,/guides/how-to-read-pdf-in-dark-mode,P1
+black background pdf reader,Dark PDF,Transactional,OLED laptop & tablet users,Global,"5,400",Low,32,/dark-pdf-reader,P2
+epub continuous scrolling,Advanced Reading,Commercial/Transactional,Web readers & speed readers,Global,"3,800",Low,24,/features/continuous-reading,P1
+vertical scrolling epub reader,Advanced Reading,Transactional,Manhua & book readers,Global,"2,900",Low,22,/features/continuous-reading,P1
+infinite scroll epub reader,Advanced Reading,Transactional,Digital readers,Global,"1,800",Low,19,/features/continuous-reading,P2
+private pdf reader,Privacy & Local,Commercial,Lawyers & medical professionals,Global,"4,200",Low,31,/privacy,P1
+read pdf without uploading,Privacy & Local,Transactional,Confidential document readers,Global,"3,100",Low,26,/privacy,P1
+local pdf reader in browser,Privacy & Local,Transactional,Security-conscious users,Global,"2,400",Low,23,/privacy,P1
+offline epub reader,Privacy & Local,Transactional,Travelers & offline users,Global,"8,500",Low-Med,37,/privacy,P2
+epub reader online india,Core EPUB,Transactional,Indian students & civil service aspirants,India,"18,000",Low-Med,34,/epub-reader-online,P1
+online pdf reader free india,Core PDF,Transactional,Indian universities & exams,India,"22,000",Medium,42,/pdf-reader-online,P1
+free epub reader usa,Core EPUB,Transactional,US students & library readers,United States,"35,000",Medium,56,/epub-reader-online,P1
+dark mode pdf reader us,Dark PDF,Transactional,US developers & college students,United States,"9,500",Low-Med,39,/dark-pdf-reader,P1
+epub reader online uk,Core EPUB,Transactional,UK academic readers,United Kingdom,"12,000",Medium,48,/epub-reader-online,P2
