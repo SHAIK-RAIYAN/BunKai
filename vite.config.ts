@@ -14,7 +14,7 @@ export default defineConfig({
       manifest: {
         name: 'BunKai',
         short_name: 'BunKai',
-        description: 'A production-grade, high-performance Web Epub Reader.',
+        description: 'A production-grade, high-performance EPUB & PDF reading platform.',
         theme_color: '#000000',
         background_color: '#000000',
         display: 'standalone',
@@ -33,8 +33,26 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
-        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // Allow caching assets up to 5MB
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
       },
     }),
   ],
+  build: {
+    chunkSizeWarningLimit: 800,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('pdfjs-dist')) {
+            return 'pdf-engine'
+          }
+          if (id.includes('epubjs')) {
+            return 'epub-engine'
+          }
+          if (id.includes('motion') || id.includes('@tanstack/react-virtual')) {
+            return 'reader-vendor'
+          }
+        },
+      },
+    },
+  },
 })
