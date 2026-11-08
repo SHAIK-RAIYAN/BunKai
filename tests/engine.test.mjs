@@ -225,6 +225,22 @@ test('SEO & Crawler Verification: Sitemap, Robots, and Static Prerendering', asy
   const robotsTxt = fs.readFileSync(path.resolve('public/robots.txt'), 'utf8')
   assert.ok(robotsTxt.includes('Sitemap: https://bunkai-reader.vercel.app/sitemap.xml'))
   assert.ok(robotsTxt.includes('User-agent: *'))
+  assert.ok(robotsTxt.includes('User-agent: OAI-SearchBot'))
+  assert.ok(robotsTxt.includes('User-agent: Claude-SearchBot'))
+  assert.ok(robotsTxt.includes('User-agent: PerplexityBot'))
+  assert.ok(robotsTxt.includes('User-agent: ChatGPT-User'))
+  assert.ok(robotsTxt.includes('User-agent: Claude-User'))
+  assert.ok(robotsTxt.includes('User-agent: GPTBot'))
+
+  // 1b. Verify llms.txt and llms-full.txt
+  const llmsTxt = fs.readFileSync(path.resolve('public/llms.txt'), 'utf8')
+  assert.ok(llmsTxt.includes('# BunKai'))
+  assert.ok(llmsTxt.includes('https://bunkai-reader.vercel.app/'))
+
+  const llmsFullTxt = fs.readFileSync(path.resolve('public/llms-full.txt'), 'utf8')
+  assert.ok(llmsFullTxt.includes('# BunKai — Authoritative Product Reference'))
+  assert.ok(llmsFullTxt.includes('epub.js'))
+  assert.ok(llmsFullTxt.includes('pdfjs-dist'))
 
   // 2. Verify sitemap.xml
   const sitemapXml = fs.readFileSync(path.resolve('public/sitemap.xml'), 'utf8')

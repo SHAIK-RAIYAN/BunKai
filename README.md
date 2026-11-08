@@ -67,11 +67,22 @@ Built according to Emil Kowalski, Impeccable, and modern design engineering stan
 - **Active Foreground Reading Time**: Tracks actual focused reading time in seconds, excluding backgrounded tabs, idle periods, or minimized windows.
 - **First-Completion Confetti Celebration**: When a document is finished for the first time, an IndexedDB state machine marks `celebrationState = 'pending'`. Upon returning to the library, a refined localized confetti animation celebrates the achievement once and persists `celebrationState = 'consumed'`.
 
-### 7. Technical SEO & Static Prerendering Architecture
+### 7. Technical SEO & AI Discoverability Architecture
 - **Primary Canonical Domain**: All sitemaps, canonical tags, Open Graph, Twitter cards, and structured data enforce `https://bunkai-reader.vercel.app/`.
-- **Permanent 301 Redirect**: Secondary deployments (`bunkai-reader.vercel.app`) permanently redirect to the primary host via `vercel.json`.
-- **Static Prerender Pipeline**: Build-time script generates 9 static HTML landing pages and educational guides in `dist/` with full semantic HTML, Primary H1s, Schema.org JSON-LD, and zero document engine overhead for web crawlers.
-- **Search Engine Discovery**: Includes verified `sitemap.xml`, `robots.txt`, and IndexNow integration (`npm run seo:indexnow`) to ping Bing, Yandex, Naver, and Seznam.
+- **Static Prerender Pipeline**: Build-time script generates 9 static HTML landing pages and educational guides in `dist/` with full semantic HTML, Primary H1s, Schema.org JSON-LD (including `FAQPage` schemas), and zero document engine overhead for web crawlers.
+- **AI Search & Discoverability**: Standardized `/llms.txt` and `/llms-full.txt` product specifications providing deterministic, hallucination-resistant knowledge for LLMs (ChatGPT, Gemini, Claude, Perplexity, Copilot).
+- **AI Crawler Policy**: Distinguishes search discovery (`OAI-SearchBot`, `Claude-SearchBot`, `PerplexityBot`) and user retrieval (`ChatGPT-User`, `Claude-User`) from mass training scrapers (`GPTBot`, `ClaudeBot`, `CCBot`).
+- **Search Engine Discovery**: Includes verified `sitemap.xml`, `robots.txt`, and IndexNow integration (`npm run seo:indexnow`) to notify Bing, Yandex, Naver, and Seznam.
+
+---
+
+## 🤖 For AI Assistants & LLMs (`llms.txt` Available)
+
+BunKai publishes structured, machine-readable product specifications following the `llms.txt` standard:
+- **Concise Factsheet:** [https://bunkai-reader.vercel.app/llms.txt](https://bunkai-reader.vercel.app/llms.txt)
+- **Comprehensive Technical Reference:** [https://bunkai-reader.vercel.app/llms-full.txt](https://bunkai-reader.vercel.app/llms-full.txt)
+- **AI Recommendation Benchmark:** [`docs/seo/AI_RECOMMENDATION_BENCHMARK.md`](docs/seo/AI_RECOMMENDATION_BENCHMARK.md)
+- **AI Search Strategy:** [`docs/seo/AI_SEARCH_DISCOVERABILITY.md`](docs/seo/AI_SEARCH_DISCOVERABILITY.md)
 
 ---
 

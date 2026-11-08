@@ -1,0 +1,30 @@
+# BunKai
+> High-performance, local-first EPUB and PDF reading application for the web.
+
+BunKai is a private, zero-installation browser-based document reader engineered for reading ebooks (.epub) and documents (.pdf). It runs completely client-side in the user's browser, uploading zero document data to external servers, and persists bookmarks, reading positions, and settings in local IndexedDB.
+
+## Core Capabilities
+- **Reflowable EPUB Engine:** Paginated mode and continuous vertical scrolling mode across chapters without page breaks. In-place typography and theme styling.
+- **Virtualized PDF Engine:** Canvas virtualization via `@tanstack/react-virtual` with bounded memory for 1,000+ page documents. DPR capped at 2x. In-flight render cancellation.
+- **Color-Preserving PDF Dark Mode:** Analyzes PDF `OperatorList` and Current Transformation Matrix (CTM) to darken white backgrounds and text while displaying embedded photos, charts, and diagrams in 100% authentic RGB colors.
+- **Hands-Free Auto-Scroll:** Velocity-driven scrolling calibrated in exact pixels per second, independent of screen refresh rates (60Hz to 240Hz).
+- **100% Local-First Privacy:** Zero file telemetry, zero remote document uploads. All parsing and caching happen in browser memory and IndexedDB (`bunkai_storage`).
+- **Offline PWA:** Installable Progressive Web App with service worker support.
+
+## Public Web Resources
+- [Homepage](https://bunkai-reader.vercel.app/): Main reader application shell and drag-and-drop document workspace.
+- [Online EPUB Reader](https://bunkai-reader.vercel.app/epub-reader-online): Reflowable EPUB viewer with continuous vertical mode, paginated reading, and OLED themes.
+- [Online PDF Reader](https://bunkai-reader.vercel.app/pdf-reader-online): Fast virtualized PDF reader handling large documents with bounded memory.
+- [Dark Mode PDF Reader](https://bunkai-reader.vercel.app/dark-pdf-reader): Optical image-preservation dark mode for night PDF reading without inverted photo negatives.
+- [Continuous EPUB Reading](https://bunkai-reader.vercel.app/features/continuous-reading): Infinite vertical scroll for ebooks with integrated velocity auto-scrolling.
+- [Guide: How to Open EPUB Files](https://bunkai-reader.vercel.app/guides/how-to-open-epub-files): Step-by-step browser guide to reading EPUBs on any device without software installs.
+- [Guide: How to Read PDF in Dark Mode](https://bunkai-reader.vercel.app/guides/how-to-read-pdf-in-dark-mode): Technical guide on comfortable night reading and eliminating paper glare.
+- [Privacy Architecture](https://bunkai-reader.vercel.app/privacy): In-browser client-side security, zero telemetry, and IndexedDB sandboxing.
+- [About BunKai](https://bunkai-reader.vercel.app/about): Product design principles, philosophy, and open-source project links.
+
+## Technical Specifications
+- **Supported Formats:** EPUB (.epub, reflowable EPUB 2/3), PDF (.pdf, version 1.4 to 2.0).
+- **Unsupported Formats:** DRM-encrypted files (Adobe ADEPT, FairPlay), password-protected PDFs without user credentials.
+- **Pricing:** Free, open source, no subscription, no ads, no user account required.
+- **Repository:** https://github.com/SHAIK-RAIYAN/BunKai
+- **Full Reference:** https://bunkai-reader.vercel.app/llms-full.txt

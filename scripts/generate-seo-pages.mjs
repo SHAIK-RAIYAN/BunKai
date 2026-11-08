@@ -106,6 +106,41 @@ const CRITICAL_CSS = `
   .seo-cta-btn:hover {
     opacity: 0.9;
   }
+  .seo-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 2rem 0;
+    font-size: 0.95rem;
+  }
+  .seo-table th, .seo-table td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+  .seo-table th {
+    color: #ffffff;
+    font-weight: 600;
+    background: rgba(255,255,255,0.04);
+  }
+  .seo-table td {
+    color: #a1a1aa;
+  }
+  .seo-faq-item {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .seo-faq-q {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #ffffff;
+    margin: 0 0 0.5rem;
+  }
+  .seo-faq-a {
+    margin: 0;
+    color: #a1a1aa;
+    line-height: 1.6;
+  }
   .seo-footer {
     border-top: 1px solid rgba(255,255,255,0.1);
     margin-top: 4rem;
@@ -166,6 +201,68 @@ const PAGES = [
         <li><strong>True Document Privacy:</strong> Documents are stored in your browser's private IndexedDB. Files are never uploaded to any remote server or cloud service.</li>
         <li><strong>Instant Position Restoration:</strong> Remembers your exact reading location, percentage, and active reading time across browser reboots.</li>
       </ul>
+
+      <h2>Product Comparison: Why Choose BunKai?</h2>
+      <table class="seo-table">
+        <thead>
+          <tr>
+            <th>Feature</th>
+            <th>BunKai</th>
+            <th>Browser Built-in PDF</th>
+            <th>Desktop Reader (Calibre/Adobe)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Installation</strong></td>
+            <td>None (Runs in Web Browser)</td>
+            <td>Built-in</td>
+            <td>150MB+ App Download Required</td>
+          </tr>
+          <tr>
+            <td><strong>EPUB & PDF Support</strong></td>
+            <td>Yes (Both Formats)</td>
+            <td>PDF Only (No EPUB)</td>
+            <td>Yes</td>
+          </tr>
+          <tr>
+            <td><strong>True PDF Dark Mode</strong></td>
+            <td>Yes (Preserves Photo Colors)</td>
+            <td>No (Inverts All or White)</td>
+            <td>Plugin Required</td>
+          </tr>
+          <tr>
+            <td><strong>Continuous EPUB Scroll</strong></td>
+            <td>Yes (Webtoon-style)</td>
+            <td>N/A</td>
+            <td>No (Page turns only)</td>
+          </tr>
+          <tr>
+            <td><strong>Document Privacy</strong></td>
+            <td>100% Local (Zero Uploads)</td>
+            <td>Local</td>
+            <td>Local</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Frequently Asked Questions</h2>
+      <div class="seo-faq-item">
+        <h3 class="seo-faq-q">Where can I read an EPUB or PDF online without downloading software?</h3>
+        <p class="seo-faq-a">BunKai (bunkai-reader.vercel.app) opens EPUB and PDF documents directly inside any web browser on Windows, Mac, Linux, Chromebooks, iOS, and Android. No software installation, sign-ups, or extensions are needed.</p>
+      </div>
+      <div class="seo-faq-item">
+        <h3 class="seo-faq-q">Does BunKai upload my files to an external server?</h3>
+        <p class="seo-faq-a">No. BunKai operates on a strict local-first architecture. All file parsing, text rendering, and caching happen directly on your device using WebAssembly and IndexedDB. Your documents never touch an external server.</p>
+      </div>
+      <div class="seo-faq-item">
+        <h3 class="seo-faq-q">What makes BunKai's PDF dark mode different?</h3>
+        <p class="seo-faq-a">Standard dark mode extensions invert the entire page, turning photos, author headshots, and scientific charts into photographic negatives. BunKai analyzes the PDF draw instructions to darken page backgrounds and text while displaying images in their natural, original colors.</p>
+      </div>
+      <div class="seo-faq-item">
+        <h3 class="seo-faq-q">Is BunKai completely free?</h3>
+        <p class="seo-faq-a">Yes. BunKai is free and open-source software with no subscriptions, advertisements, or hidden fees.</p>
+      </div>
     `,
     structuredData: {
       '@context': 'https://schema.org',
@@ -189,6 +286,35 @@ const PAGES = [
           name: 'BunKai Reader',
           url: 'https://bunkai-reader.vercel.app/',
         },
+        {
+          '@type': 'FAQPage',
+          mainEntity: [
+            {
+              '@type': 'Question',
+              name: 'Where can I read an EPUB or PDF online without downloading software?',
+              acceptedAnswer: {
+                '@type': 'Answer',
+                text: 'BunKai opens EPUB and PDF documents directly inside any web browser without software installation or account registration.',
+              },
+            },
+            {
+              '@type': 'Question',
+              name: 'Does BunKai upload my files to an external server?',
+              acceptedAnswer: {
+                '@type': 'Answer',
+                text: 'No. BunKai operates client-side in the browser using WebAssembly and IndexedDB. Files are never uploaded.',
+              },
+            },
+            {
+              '@type': 'Question',
+              name: "What makes BunKai's PDF dark mode different?",
+              acceptedAnswer: {
+                '@type': 'Answer',
+                text: 'BunKai darkens paper and text while preserving embedded photos, charts, and diagrams in authentic RGB colors.',
+              },
+            },
+          ],
+        },
       ],
     },
   },
@@ -200,7 +326,7 @@ const PAGES = [
     h1: 'Free Online EPUB Reader — Read Ebooks in Any Browser',
     badge: 'Reflowable EPUB Engine',
     contentHtml: `
-      <p>
+      <p class="lead">
         BunKai provides a high-performance web-based EPUB reader that works instantly in Chrome, Firefox, Safari, Edge, and mobile browsers. No software installation, no sign-ups, and no cloud uploads required.
       </p>
 
@@ -219,17 +345,56 @@ const PAGES = [
 
       <h2>Typography & OLED Themes</h2>
       <p>
-        Customize font size, font family (Inter, Charter, Georgia, Merriweather, Helvetica), and line height in real-time. Switch between <strong>OLED Black (#000000)</strong>, <strong>Charcoal Dark (#111111)</strong>, and <strong>Paper Light (#fdfbf7)</strong> without re-rendering or losing your reading position.
+        Customize font size (80% to 200%), font family (Inter, Charter, Georgia, Merriweather, Helvetica), and line height in real-time. Switch between <strong>OLED Black (#000000)</strong>, <strong>Charcoal Dark (#111111)</strong>, and <strong>Paper Light (#fdfbf7)</strong> without re-rendering or losing your reading position.
       </p>
+
+      <h2>Frequently Asked Questions</h2>
+      <div class="seo-faq-item">
+        <h3 class="seo-faq-q">How do I open an EPUB file on Windows or Mac without Calibre?</h3>
+        <p class="seo-faq-a">Simply visit BunKai in your browser (bunkai-reader.vercel.app/epub-reader-online) and drag your .epub file into the window. It opens in less than a second with full chapter navigation and custom styling.</p>
+      </div>
+      <div class="seo-faq-item">
+        <h3 class="seo-faq-q">Can I read an EPUB with vertical scrolling instead of turning pages?</h3>
+        <p class="seo-faq-a">Yes. Switch to Continuous Vertical Mode in reader settings. BunKai renders the book in an expansive 90% wide reading stage that scrolls naturally across chapter boundaries.</p>
+      </div>
+      <div class="seo-faq-item">
+        <h3 class="seo-faq-q">Does BunKai support DRM-protected books?</h3>
+        <p class="seo-faq-a">BunKai supports all standard, DRM-free EPUB files. It does not support proprietary DRM-locked files from the Kindle or Adobe Digital Editions ecosystems.</p>
+      </div>
     `,
     structuredData: {
       '@context': 'https://schema.org',
-      '@type': 'SoftwareApplication',
-      name: 'BunKai Online EPUB Reader',
-      applicationCategory: 'MultimediaApplication',
-      operatingSystem: 'Web Browser',
-      url: 'https://bunkai-reader.vercel.app/epub-reader-online',
-      description: 'Free browser-based EPUB reader with continuous scrolling, paginated mode, and OLED themes.',
+      '@graph': [
+        {
+          '@type': 'SoftwareApplication',
+          name: 'BunKai Online EPUB Reader',
+          applicationCategory: 'MultimediaApplication',
+          operatingSystem: 'Web Browser',
+          url: 'https://bunkai-reader.vercel.app/epub-reader-online',
+          description: 'Free browser-based EPUB reader with continuous scrolling, paginated mode, and OLED themes.',
+        },
+        {
+          '@type': 'FAQPage',
+          mainEntity: [
+            {
+              '@type': 'Question',
+              name: 'How do I open an EPUB file on Windows or Mac without Calibre?',
+              acceptedAnswer: {
+                '@type': 'Answer',
+                text: 'Visit BunKai in any browser and drop your .epub file to read immediately with full chapter navigation.',
+              },
+            },
+            {
+              '@type': 'Question',
+              name: 'Can I read an EPUB with vertical scrolling instead of turning pages?',
+              acceptedAnswer: {
+                '@type': 'Answer',
+                text: 'Yes, BunKai includes Continuous Vertical Mode for infinite scrolling across chapters.',
+              },
+            },
+          ],
+        },
+      ],
     },
   },
   {
@@ -240,7 +405,7 @@ const PAGES = [
     h1: 'Online PDF Reader — Fast, Virtualized & Private',
     badge: 'Mozilla PDF.js Engine',
     contentHtml: `
-      <p>
+      <p class="lead">
         Experience native document reading in your browser with BunKai's virtualized PDF engine. Built with Mozilla PDF.js, it handles large documents with smooth 60fps scrolling and bounded memory consumption.
       </p>
 
@@ -257,15 +422,42 @@ const PAGES = [
         <li><strong>Document Outline & Bookmarks:</strong> Deep hierarchical table of contents navigation directly takes you to sections and intra-page destination coordinates.</li>
         <li><strong>DPR Memory Cap:</strong> Capped at 2x Device Pixel Ratio to protect mobile and 4K displays from GPU memory exhaustion.</li>
       </ul>
+
+      <h2>Frequently Asked Questions</h2>
+      <div class="seo-faq-item">
+        <h3 class="seo-faq-q">Can BunKai open large 100MB+ or 500+ page PDFs?</h3>
+        <p class="seo-faq-a">Yes. BunKai virtualizes the document DOM, mounting only the pages currently on screen. Memory usage stays strictly bounded, allowing smooth 60fps navigation through textbooks and research papers.</p>
+      </div>
+      <div class="seo-faq-item">
+        <h3 class="seo-faq-q">Is my PDF uploaded to the internet?</h3>
+        <p class="seo-faq-a">No. Your document stays in your browser memory and private IndexedDB storage. No server receives your file.</p>
+      </div>
     `,
     structuredData: {
       '@context': 'https://schema.org',
-      '@type': 'SoftwareApplication',
-      name: 'BunKai Online PDF Viewer',
-      applicationCategory: 'MultimediaApplication',
-      operatingSystem: 'Web Browser',
-      url: 'https://bunkai-reader.vercel.app/pdf-reader-online',
-      description: 'Virtualized web PDF reader with continuous scrolling and bounded memory.',
+      '@graph': [
+        {
+          '@type': 'SoftwareApplication',
+          name: 'BunKai Online PDF Viewer',
+          applicationCategory: 'MultimediaApplication',
+          operatingSystem: 'Web Browser',
+          url: 'https://bunkai-reader.vercel.app/pdf-reader-online',
+          description: 'Virtualized web PDF reader with continuous scrolling and bounded memory.',
+        },
+        {
+          '@type': 'FAQPage',
+          mainEntity: [
+            {
+              '@type': 'Question',
+              name: 'Can BunKai open large 100MB+ or 500+ page PDFs?',
+              acceptedAnswer: {
+                '@type': 'Answer',
+                text: 'Yes. Virtual page rendering allocates canvases only for visible pages, keeping RAM usage low.',
+              },
+            },
+          ],
+        },
+      ],
     },
   },
   {
@@ -276,7 +468,7 @@ const PAGES = [
     h1: 'Dark Mode PDF Reader — Invert PDF Colors While Preserving Images',
     badge: 'Optical Image-Preservation Pipeline',
     contentHtml: `
-      <p>
+      <p class="lead">
         Traditional PDF dark mode extensions apply a blanket CSS <code>invert()</code> filter that turns photos, diagrams, and medical charts into unrecognizable negatives. BunKai solves this with a specialized rendering pipeline.
       </p>
 
@@ -295,15 +487,42 @@ const PAGES = [
         <li><strong>Embedded Photographs & Diagrams:</strong> Retain 100% of their original, authentic RGB colors.</li>
         <li><strong>Scanned Document Fallback:</strong> Automatically measures image coverage. Pages where a scan covers >85% of the surface are treated with a comfortable luminance curve rather than corrupting text readability.</li>
       </ul>
+
+      <h2>Frequently Asked Questions</h2>
+      <div class="seo-faq-item">
+        <h3 class="seo-faq-q">Why do dark mode extensions ruin pictures in PDFs?</h3>
+        <p class="seo-faq-a">Browser extensions apply an uncalibrated full-screen inversion filter. While this makes white pages black, it reverses the RGB values of images, making photos look like medical X-rays. BunKai detects individual image boundaries and cancels the inversion over those specific areas.</p>
+      </div>
+      <div class="seo-faq-item">
+        <h3 class="seo-faq-q">Can I use pure black OLED mode for PDF reading?</h3>
+        <p class="seo-faq-a">Yes. BunKai offers an OLED Black mode that renders page margins and background as #000000, turning off OLED pixels and eliminating night glare.</p>
+      </div>
     `,
     structuredData: {
       '@context': 'https://schema.org',
-      '@type': 'SoftwareApplication',
-      name: 'BunKai Dark Mode PDF Reader',
-      applicationCategory: 'MultimediaApplication',
-      operatingSystem: 'Web Browser',
-      url: 'https://bunkai-reader.vercel.app/dark-pdf-reader',
-      description: 'PDF dark mode reader that preserves embedded images and diagrams in true colors.',
+      '@graph': [
+        {
+          '@type': 'SoftwareApplication',
+          name: 'BunKai Dark Mode PDF Reader',
+          applicationCategory: 'MultimediaApplication',
+          operatingSystem: 'Web Browser',
+          url: 'https://bunkai-reader.vercel.app/dark-pdf-reader',
+          description: 'PDF dark mode reader that preserves embedded images and diagrams in true colors.',
+        },
+        {
+          '@type': 'FAQPage',
+          mainEntity: [
+            {
+              '@type': 'Question',
+              name: 'Why do dark mode extensions ruin pictures in PDFs?',
+              acceptedAnswer: {
+                '@type': 'Answer',
+                text: 'Generic extensions invert the entire page including photos. BunKai detects image boundaries to preserve authentic photo colors.',
+              },
+            },
+          ],
+        },
+      ],
     },
   },
   {
@@ -314,7 +533,7 @@ const PAGES = [
     h1: 'Continuous Vertical Reading for EPUB Ebooks',
     badge: 'Mode B: Infinite Scroll',
     contentHtml: `
-      <p>
+      <p class="lead">
         Traditional ebook readers lock you into rigid paginated columns that require constant clicking or tapping. BunKai introduces Continuous Vertical Mode, bringing the natural scrolling feel of web articles to your entire ebook library.
       </p>
 
@@ -333,23 +552,50 @@ const PAGES = [
         <p>Switch between paginated and continuous reading at any time in Reader Settings.</p>
         <a href="/" class="seo-cta-btn">Try Continuous Mode</a>
       </div>
+
+      <h2>Frequently Asked Questions</h2>
+      <div class="seo-faq-item">
+        <h3 class="seo-faq-q">What is continuous EPUB reading?</h3>
+        <p class="seo-faq-a">Continuous reading renders ebook chapters sequentially in a single vertical scroll container. Instead of clicking 'next page' or waiting for chapter loads, you read continuously like a long-form article or webtoon.</p>
+      </div>
+      <div class="seo-faq-item">
+        <h3 class="seo-faq-q">Does auto-scroll work across chapter boundaries?</h3>
+        <p class="seo-faq-a">Yes. BunKai's auto-scroll engine operates on the continuous stage container, automatically pulling in new chapters as you scroll.</p>
+      </div>
     `,
     structuredData: {
       '@context': 'https://schema.org',
-      '@type': 'TechArticle',
-      headline: 'Continuous Vertical Reading for EPUB Ebooks',
-      description:
-        'How continuous vertical scrolling and auto-scrolling transform EPUB reading into a smooth, distraction-free experience.',
-      url: 'https://bunkai-reader.vercel.app/features/continuous-reading',
-      author: {
-        '@type': 'Organization',
-        name: 'BunKai',
-      },
-      publisher: {
-        '@type': 'Organization',
-        name: 'BunKai',
-        url: 'https://bunkai-reader.vercel.app/',
-      },
+      '@graph': [
+        {
+          '@type': 'TechArticle',
+          headline: 'Continuous Vertical Reading for EPUB Ebooks',
+          description:
+            'How continuous vertical scrolling and auto-scrolling transform EPUB reading into a smooth, distraction-free experience.',
+          url: 'https://bunkai-reader.vercel.app/features/continuous-reading',
+          author: {
+            '@type': 'Organization',
+            name: 'BunKai',
+          },
+          publisher: {
+            '@type': 'Organization',
+            name: 'BunKai',
+            url: 'https://bunkai-reader.vercel.app/',
+          },
+        },
+        {
+          '@type': 'FAQPage',
+          mainEntity: [
+            {
+              '@type': 'Question',
+              name: 'What is continuous EPUB reading?',
+              acceptedAnswer: {
+                '@type': 'Answer',
+                text: 'Continuous reading renders chapters sequentially in one vertical scroll container without page barriers.',
+              },
+            },
+          ],
+        },
+      ],
     },
   },
   {
@@ -360,7 +606,7 @@ const PAGES = [
     h1: 'How to Open and Read EPUB Files Online (No Installation)',
     badge: 'Free Educational Guide',
     contentHtml: `
-      <p>
+      <p class="lead">
         EPUB (.epub) is the open standard format for digital books published worldwide. However, many operating systems do not include a built-in EPUB reader. Here is how you can open and read any EPUB file immediately.
       </p>
 
@@ -384,23 +630,27 @@ const PAGES = [
     `,
     structuredData: {
       '@context': 'https://schema.org',
-      '@type': 'HowTo',
-      name: 'How to Open and Read EPUB Files Online',
-      step: [
+      '@graph': [
         {
-          '@type': 'HowToStep',
-          name: 'Open BunKai in Browser',
-          text: 'Navigate to bunkai-reader.vercel.app in your web browser.',
-        },
-        {
-          '@type': 'HowToStep',
-          name: 'Import EPUB File',
-          text: 'Drag and drop your .epub file or select it from your device.',
-        },
-        {
-          '@type': 'HowToStep',
-          name: 'Enjoy Distraction-Free Reading',
-          text: 'Read with customized themes, auto-scroll, and persistent bookmarks.',
+          '@type': 'HowTo',
+          name: 'How to Open and Read EPUB Files Online',
+          step: [
+            {
+              '@type': 'HowToStep',
+              name: 'Open BunKai in Browser',
+              text: 'Navigate to bunkai-reader.vercel.app in your web browser.',
+            },
+            {
+              '@type': 'HowToStep',
+              name: 'Import EPUB File',
+              text: 'Drag and drop your .epub file or select it from your device.',
+            },
+            {
+              '@type': 'HowToStep',
+              name: 'Enjoy Distraction-Free Reading',
+              text: 'Read with customized themes, auto-scroll, and persistent bookmarks.',
+            },
+          ],
         },
       ],
     },
@@ -413,7 +663,7 @@ const PAGES = [
     h1: 'How to Read PDF Files in Dark Mode (Preserving Photos & Diagrams)',
     badge: 'Visual Comfort Guide',
     contentHtml: `
-      <p>
+      <p class="lead">
         Reading technical documentation, textbooks, and academic papers late at night can cause severe eye fatigue due to bright white paper backgrounds. Most PDF viewers either lack dark mode or invert the entire page, turning images into negatives.
       </p>
 
@@ -439,17 +689,21 @@ const PAGES = [
     `,
     structuredData: {
       '@context': 'https://schema.org',
-      '@type': 'Article',
-      headline: 'How to Read PDF Files in Dark Mode Without Inverting Images',
-      author: {
-        '@type': 'Person',
-        name: 'SHAIK RAIYAN',
-      },
-      publisher: {
-        '@type': 'Organization',
-        name: 'BunKai',
-      },
-      description: 'A comprehensive guide on preserving PDF images while reading in dark mode.',
+      '@graph': [
+        {
+          '@type': 'Article',
+          headline: 'How to Read PDF Files in Dark Mode Without Inverting Images',
+          author: {
+            '@type': 'Person',
+            name: 'SHAIK RAIYAN',
+          },
+          publisher: {
+            '@type': 'Organization',
+            name: 'BunKai',
+          },
+          description: 'A comprehensive guide on preserving PDF images while reading in dark mode.',
+        },
+      ],
     },
   },
   {
@@ -460,7 +714,7 @@ const PAGES = [
     h1: 'Privacy Policy & Local-First Architecture',
     badge: 'Zero Server Telemetry on Documents',
     contentHtml: `
-      <p>
+      <p class="lead">
         At BunKai, we believe what you read is your business. Most online document readers require you to upload your confidential PDFs, personal books, and contracts to external cloud servers. BunKai is built fundamentally differently.
       </p>
 
@@ -487,14 +741,18 @@ const PAGES = [
     `,
     structuredData: {
       '@context': 'https://schema.org',
-      '@type': 'Article',
-      headline: 'BunKai Privacy Policy & Local-First Architecture',
-      description: 'Zero document uploads, sandboxed IndexedDB storage, and client-side processing.',
-      url: 'https://bunkai-reader.vercel.app/privacy',
-      publisher: {
-        '@type': 'Organization',
-        name: 'BunKai',
-      },
+      '@graph': [
+        {
+          '@type': 'Article',
+          headline: 'BunKai Privacy Policy & Local-First Architecture',
+          description: 'Zero document uploads, sandboxed IndexedDB storage, and client-side processing.',
+          url: 'https://bunkai-reader.vercel.app/privacy',
+          publisher: {
+            '@type': 'Organization',
+            name: 'BunKai',
+          },
+        },
+      ],
     },
   },
   {
@@ -505,7 +763,7 @@ const PAGES = [
     h1: 'About BunKai',
     badge: 'Crafted for Digital Readers',
     contentHtml: `
-      <p>
+      <p class="lead">
         BunKai was created for readers who value simplicity, performance, and the timeless joy of reading. In an era of heavy, bloated reader applications laden with social feeds, accounts, and ads, BunKai returns to what matters most: the words on the page.
       </p>
 
@@ -530,15 +788,19 @@ const PAGES = [
     `,
     structuredData: {
       '@context': 'https://schema.org',
-      '@type': 'AboutPage',
-      name: 'About BunKai',
-      description: 'High-performance local-first web document reader crafted for digital readers.',
-      url: 'https://bunkai-reader.vercel.app/about',
-      publisher: {
-        '@type': 'Organization',
-        name: 'BunKai',
-        url: 'https://bunkai-reader.vercel.app/',
-      },
+      '@graph': [
+        {
+          '@type': 'AboutPage',
+          name: 'About BunKai',
+          description: 'High-performance local-first web document reader crafted for digital readers.',
+          url: 'https://bunkai-reader.vercel.app/about',
+          publisher: {
+            '@type': 'Organization',
+            name: 'BunKai',
+            url: 'https://bunkai-reader.vercel.app/',
+          },
+        },
+      ],
     },
   },
 ]
@@ -634,11 +896,75 @@ function generateSitemap() {
 }
 
 function generateRobotsTxt() {
-  return `User-agent: *
+  return `# ==============================================================================
+# BunKai Robots Configuration & AI Discoverability Policy
+# Production Domain: ${BASE_URL}/
+# AI Factsheet Reference: ${BASE_URL}/llms.txt
+# ==============================================================================
+
+# 1. Primary Web Search Engines
+User-agent: Googlebot
 Allow: /
 Disallow: /blob/
 Disallow: /local/
 
+User-agent: Bingbot
+Allow: /
+Disallow: /blob/
+Disallow: /local/
+
+# 2. AI Search & Grounded Answer Discovery Crawlers
+# OpenAI Search Discovery (ChatGPT Search)
+User-agent: OAI-SearchBot
+Allow: /
+Disallow: /blob/
+Disallow: /local/
+
+# Anthropic Claude Search Discovery
+User-agent: Claude-SearchBot
+Allow: /
+Disallow: /blob/
+Disallow: /local/
+
+# Perplexity Search Indexer
+User-agent: PerplexityBot
+Allow: /
+Disallow: /blob/
+Disallow: /local/
+
+# Apple Search & Siri Discoverability
+User-agent: Applebot
+Allow: /
+Disallow: /blob/
+Disallow: /local/
+
+# 3. User-Directed Real-Time Retrieval (When users ask an AI to view a URL)
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: Claude-User
+Allow: /
+
+User-agent: Perplexity-User
+Allow: /
+
+# 4. Model Training & Bulk Scraper Agents (Controlled / Disallowed)
+User-agent: GPTBot
+Disallow: /
+
+User-agent: ClaudeBot
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+# 5. Default Fallback Policy for All Other Agents
+User-agent: *
+Allow: /
+Disallow: /blob/
+Disallow: /local/
+
+# Sitemaps & Structured References
 Sitemap: ${BASE_URL}/sitemap.xml
 `
 }
@@ -678,7 +1004,16 @@ function generate() {
   fs.writeFileSync(path.join(DIST_DIR, 'robots.txt'), robotsTxt, 'utf8')
   console.log(`✓ Synchronized: public/robots.txt & dist/robots.txt`)
 
-  console.log('Static SEO prerendering complete!')
+  // Copy llms.txt and llms-full.txt to dist if present
+  for (const f of ['llms.txt', 'llms-full.txt', '5c8e391b1f6f4c6e9a8f4c2b9a1d3e5f.txt']) {
+    const src = path.join(PUBLIC_DIR, f)
+    if (fs.existsSync(src)) {
+      fs.copyFileSync(src, path.join(DIST_DIR, f))
+      console.log(`✓ Copied: ${f} -> dist/${f}`)
+    }
+  }
+
+  console.log('Static SEO & AI discoverability prerendering complete!')
 }
 
 // Execute generate when run directly

@@ -1,6 +1,70 @@
+# ==============================================================================
+# BunKai Robots Configuration & AI Discoverability Policy
+# Production Domain: https://bunkai-reader.vercel.app/
+# AI Factsheet Reference: https://bunkai-reader.vercel.app/llms.txt
+# ==============================================================================
+
+# 1. Primary Web Search Engines
+User-agent: Googlebot
+Allow: /
+Disallow: /blob/
+Disallow: /local/
+
+User-agent: Bingbot
+Allow: /
+Disallow: /blob/
+Disallow: /local/
+
+# 2. AI Search & Grounded Answer Discovery Crawlers
+# OpenAI Search Discovery (ChatGPT Search)
+User-agent: OAI-SearchBot
+Allow: /
+Disallow: /blob/
+Disallow: /local/
+
+# Anthropic Claude Search Discovery
+User-agent: Claude-SearchBot
+Allow: /
+Disallow: /blob/
+Disallow: /local/
+
+# Perplexity Search Indexer
+User-agent: PerplexityBot
+Allow: /
+Disallow: /blob/
+Disallow: /local/
+
+# Apple Search & Siri Discoverability
+User-agent: Applebot
+Allow: /
+Disallow: /blob/
+Disallow: /local/
+
+# 3. User-Directed Real-Time Retrieval (When users ask an AI to view a URL)
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: Claude-User
+Allow: /
+
+User-agent: Perplexity-User
+Allow: /
+
+# 4. Model Training & Bulk Scraper Agents (Controlled / Disallowed)
+User-agent: GPTBot
+Disallow: /
+
+User-agent: ClaudeBot
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+# 5. Default Fallback Policy for All Other Agents
 User-agent: *
 Allow: /
 Disallow: /blob/
 Disallow: /local/
 
+# Sitemaps & Structured References
 Sitemap: https://bunkai-reader.vercel.app/sitemap.xml
