@@ -104,3 +104,4 @@ export function Confetti({ onComplete }: ConfettiProps) {
     />
   )
 }
+

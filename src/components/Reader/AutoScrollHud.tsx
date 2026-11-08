@@ -32,7 +32,7 @@ export function AutoScrollHud({
   useEffect(() => {
     if (!isExpanded) return
 
-    const handlePointerDown = (e: MouseEvent | PointerEvent | TouchEvent) => {
+    const handlePointerDown = (e: Event) => {
       if (hudRef.current && !hudRef.current.contains(e.target as Node)) {
         setIsExpanded(false)
       }
@@ -44,12 +44,40 @@ export function AutoScrollHud({
       }
     }
 
-    document.addEventListener('pointerdown', handlePointerDown)
+    const handleWindowBlur = () => {
+      // Closes HUD when clicking into an EPUB iframe or shifting focus outside
+      setIsExpanded(false)
+    }
+
+    document.addEventListener('pointerdown', handlePointerDown, true)
+    document.addEventListener('mousedown', handlePointerDown, true)
+    document.addEventListener('touchstart', handlePointerDown, true)
     document.addEventListener('keydown', handleKeyDown)
+    window.addEventListener('blur', handleWindowBlur)
+
+    // Also attach to any active iframes (EPUB reader)
+    const iframes = document.querySelectorAll('iframe')
+    iframes.forEach((iframe) => {
+      try {
+        iframe.contentDocument?.addEventListener('pointerdown', handlePointerDown, true)
+      } catch {
+        // Cross-origin fallback handled by window blur
+      }
+    })
 
     return () => {
-      document.removeEventListener('pointerdown', handlePointerDown)
+      document.removeEventListener('pointerdown', handlePointerDown, true)
+      document.removeEventListener('mousedown', handlePointerDown, true)
+      document.removeEventListener('touchstart', handlePointerDown, true)
       document.removeEventListener('keydown', handleKeyDown)
+      window.removeEventListener('blur', handleWindowBlur)
+      iframes.forEach((iframe) => {
+        try {
+          iframe.contentDocument?.removeEventListener('pointerdown', handlePointerDown, true)
+        } catch {
+          // Ignore
+        }
+      })
     }
   }, [isExpanded])
 

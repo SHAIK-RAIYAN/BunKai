@@ -114,3 +114,4 @@ Truthful, verified structured data without fabricated reviews:
 | **Organic Click-Through Rate (CTR)** | > 3.5% | > 4.8% | Search Console Performance |
 | **Core Web Vitals Pass Rate** | 100% Good (LCP < 2.5s, CLS < 0.1) | 100% Good | PageSpeed / CrUX |
 | **Document Import Conversion** | > 15% of landing page visitors | > 22% of landing page visitors | In-browser privacy-safe event counter |
+
